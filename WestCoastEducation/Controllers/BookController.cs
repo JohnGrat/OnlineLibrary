@@ -15,12 +15,10 @@ namespace WestCoastEducation.Controllers
     public class BookController : ControllerBase
     {
 
-        private readonly ILogger<BookController> _logger;
         private readonly IBookService _bookService;
 
         public BookController(ILogger<BookController> logger, IBookService bookService)
         {
-            _logger = logger;
             _bookService = bookService;
         }
 
