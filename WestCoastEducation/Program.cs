@@ -3,13 +3,10 @@ using Business.Services;
 using Business.Services.Default;
 using DataAccess.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using WestCoastEducation.Auth;
@@ -30,6 +27,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+
+
 
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -90,6 +90,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-
+app.UseCors(options =>
+       options.WithOrigins(configuration["Cors:AllowedOrigins"])
+              .AllowAnyMethod()
+              .AllowAnyHeader());
 
 app.Run();

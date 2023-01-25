@@ -185,7 +185,7 @@ namespace WestCoastEducation.Controllers
         }
 
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         [Route("revoke/{username}")]
         public async Task<IActionResult> Revoke(string username)
@@ -200,7 +200,7 @@ namespace WestCoastEducation.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         [Route("revoke-all")]
         public async Task<IActionResult> RevokeAll()

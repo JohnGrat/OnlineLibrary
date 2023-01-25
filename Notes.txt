@@ -1,0 +1,3 @@
+Admin: Has access to all features of the application, including managing books, orders, and user accounts.
+Employee: Has access to manage books and orders, but not user accounts.
+Customer: Can view books, add them to a cart, and place orders.
