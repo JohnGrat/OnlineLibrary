@@ -29,8 +29,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 
-
-
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -41,7 +39,7 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.Authority = "https://localhost:7253/api/connect";
+    options.Authority = "https://localhost:7253/api/authenticate";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidAudience = configuration["JWT:ValidAudience"],

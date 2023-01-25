@@ -14,8 +14,8 @@ using WestCoastEducation.Helpers;
 namespace WestCoastEducation.Controllers
 {
     [ApiController]
-    [Route("api/connect")]
-    public class ConnectController : Controller
+    [Route("api/authenticate")]
+    public class AuthenticateController : Controller
     {
 
         private readonly UserManager<ApplicationUser> _userManager;
@@ -23,7 +23,7 @@ namespace WestCoastEducation.Controllers
         private readonly IConfiguration _configuration;
         private readonly IJwtUtils _jwtUtils;
 
-        public ConnectController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IJwtUtils jwtUtils)
+        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IJwtUtils jwtUtils)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -221,8 +221,8 @@ namespace WestCoastEducation.Controllers
         {
             var configuration = new OpenIdConnectConfiguration();
             configuration.Issuer = "https://localhost:7253/";
-            configuration.AuthorizationEndpoint = "https://localhost:7253/connect/authorize";
-            configuration.TokenEndpoint = "https://localhost:7253/connect/token";
+            configuration.AuthorizationEndpoint = "https://localhost:7253/authenticate/authorize";
+            configuration.TokenEndpoint = "https://localhost:7253/authenticate/token";
             return Ok(configuration);
         }
 

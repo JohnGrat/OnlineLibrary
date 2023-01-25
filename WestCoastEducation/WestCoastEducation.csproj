@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Settings\**" />
+    <Content Remove="Settings\**" />
+    <EmbeddedResource Remove="Settings\**" />
+    <None Remove="Settings\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="IdentityModel" Version="6.0.0" />
@@ -26,7 +33,6 @@
 
   <ItemGroup>
     <Folder Include="ClientApp\" />
-    <Folder Include="Settings\Security\" />
   </ItemGroup>
 
 </Project>

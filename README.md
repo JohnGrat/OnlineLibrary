@@ -9,4 +9,8 @@ API endpoints will be secured through the use of ASP.NET Core middleware and JSO
 Unit tests will be implemented to ensure proper functionality. 
 
 On the frontend, React will be used to provide diverse user interfaces and options based on the user's account role. 
-There will be at least two roles in this project: customers and managers.
+There will be at least three different types of user roles: Administrators, Employees, and Customers.
+
+* Administrators will have full access to all aspects of the application such as managing books, orders, and user accounts. 
+* Employees will be able to manage books and orders but will not have access to user accounts. 
+* Customers will only be able to view books, add them to their cart, and place orders.
