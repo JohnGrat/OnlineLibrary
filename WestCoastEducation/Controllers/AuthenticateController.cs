@@ -1,9 +1,11 @@
-﻿
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -136,9 +138,9 @@ namespace WestCoastEducation.Controllers
 
                 return Ok(new
                 {
-                    Token = new JwtSecurityTokenHandler().WriteToken(token),
-                    RefreshToken = refreshToken,
-                    Expiration = token.ValidTo
+                    accessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                    refreshToken = refreshToken,
+                    expiration = token.ValidTo
                 });
             }
             return Unauthorized();
@@ -148,6 +150,7 @@ namespace WestCoastEducation.Controllers
         [Route("refresh-token")]
         public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
         {
+
             if (tokenModel is null)
             {
                 return BadRequest("Invalid client request");

@@ -28,7 +28,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -44,7 +43,10 @@ builder.Services.AddAuthentication(options =>
     {
         ValidAudience = configuration["JWT:ValidAudience"],
         ValidIssuer = configuration["JWT:ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
+        ClockSkew = TimeSpan.FromSeconds(1),
+        RequireExpirationTime = true,
+        ValidateLifetime = true,
     };
 });
 
@@ -82,15 +84,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.UseCors(options =>
        options.WithOrigins(configuration["Cors:AllowedOrigins"])
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+           .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.Run();
