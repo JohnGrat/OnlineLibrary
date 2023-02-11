@@ -23,7 +23,11 @@ namespace Business.Services.Default
 
         public async Task<List<BookBriefDto>> GetAllBooks(string sort, string filter, int? page, int? pageSize)
         {
-            var query = _context.Books.AsQueryable();
+            var query = _context.Books
+                .Include(b => b.Language)
+                .Include(b => b.Authors)
+                .Include(b => b.Publisher)
+                .AsQueryable();
 
             // Apply filter
             if (!string.IsNullOrEmpty(filter))

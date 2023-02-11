@@ -13,13 +13,13 @@ namespace Business.Dtos
 
         public string Title { get; set; } = null!;
 
-        public int? NumPages { get; set; }
+        public string? AuthorsName { get; set; }
 
-        public decimal BookPrice { get; set; }
+        public DateTime? PublicationDate { get; set; }
 
         public string? LanguageName { get; set; }
 
-        public string? AuthorsName { get; set; }
+        public decimal BookPrice { get; set; }
 
     }
 }

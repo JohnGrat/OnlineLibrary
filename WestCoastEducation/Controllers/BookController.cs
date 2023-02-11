@@ -37,7 +37,7 @@ namespace WestCoastEducation.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAllBooks(string? sort, string? filter, int? page, int? pageSize)
+        public async Task<ActionResult> GetAllBooks(string? sort, string? filter, int? page = 1, int? pageSize = 100)
         {
             var models = await _bookService.GetAllBooks(sort, filter, page, pageSize);
 

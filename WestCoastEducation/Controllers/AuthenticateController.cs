@@ -24,6 +24,7 @@ namespace WestCoastEducation.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly IJwtUtils _jwtUtils;
+        const string RefreshKey = "RefreshKey";
 
         public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IJwtUtils jwtUtils)
         {
@@ -102,7 +103,7 @@ namespace WestCoastEducation.Controllers
         [Route("authorize")]
         public async Task<IActionResult> Login()
         {
-            string clientId, clientSecret;
+            
             if (!Request.Headers.TryGetValue("Authorization", out var authHeader)
                 || !_jwtUtils.TryExtractClientCredentials(authHeader, out string username, out string password))
             {
@@ -118,6 +119,7 @@ namespace WestCoastEducation.Controllers
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
 
@@ -216,6 +218,16 @@ namespace WestCoastEducation.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("me")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var roles = await _userManager.GetRolesAsync(user);
+            return Ok(new { username = user.UserName, roles = roles.ToArray(), email = user.Email, id = user.Id });
         }
 
 

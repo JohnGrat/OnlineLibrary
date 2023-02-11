@@ -59,6 +59,7 @@ namespace WestCoastEducation.Helpers
 
         public JwtSecurityToken CreateToken(List<Claim> authClaims)
         {
+  
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             _ = int.TryParse(_configuration["JWT:TokenValidityInMinutes"], out int tokenValidityInMinutes);
 
