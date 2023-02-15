@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { IconChevronRight } from '@tabler/icons-react';
-import { Group, Avatar, Text, Menu, UnstyledButton } from '@mantine/core';
+import { Group, Avatar, Text, Menu, UnstyledButton, MediaQuery } from '@mantine/core';
 
 interface UserButtonProps extends React.ComponentPropsWithoutRef<'button'> {
   image: string;
@@ -29,6 +29,7 @@ export const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
       <Group>
         <Avatar src={image} radius="xl" />
 
+        <MediaQuery smallerThan="sm" styles={{ display: 'none' }}>
         <div style={{ flex: 1 }}>
           <Text size="sm" weight={500}>
             {name}
@@ -38,8 +39,10 @@ export const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
             {email}
           </Text>
         </div>
-
+        </MediaQuery>
         {icon || <IconChevronRight size={16} />}
+
+        
       </Group>
     </UnstyledButton>
   )

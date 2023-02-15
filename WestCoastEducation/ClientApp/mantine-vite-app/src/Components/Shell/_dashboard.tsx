@@ -7,12 +7,11 @@ import {
   Text,
   MediaQuery,
   useMantineTheme,
-  Breadcrumbs,
   Anchor,
   Group,
   Menu,
-  Button,
-  Burger
+  Burger,
+  Breadcrumbs
 } from '@mantine/core';
 import { Brand } from '../_brand';
 import { UserButton } from '../_user';
@@ -20,8 +19,8 @@ import { MainLinks } from '../_mainLinks';
 import useAuth from '../../Providers/auth.provider';
 import { User } from '../../Models/user';
 import { IconExternalLink } from '@tabler/icons-react';
-import { getBooks } from '../../API/books.api';
 import { useState } from 'react';
+import { SignIn } from '../_login';
 
 function convertURL(url: string) {
   const path = url.split('/').filter(Boolean);
@@ -46,7 +45,6 @@ function dashboard(props: any) {
   const { children, history, location, guardData }: any = props;
   const { user, logout }: Partial<{ user: User, logout: () => void }> = useAuth();
   const [opened, setOpened] = useState(false);
-
 
   const bcItems = convertURL(location.pathname)
   const theme = useMantineTheme();
@@ -96,13 +94,19 @@ function dashboard(props: any) {
               </div>
             </MediaQuery>
 
+            <MediaQuery smallerThan="sm" styles={{ display: 'none' }}>
+              <div>
+                  <Breadcrumbs separator="→">{bcItems}</Breadcrumbs>
+              </div>
+            </MediaQuery>
+
             <Group>
-              {user && <Menu width={200} shadow="md" withArrow zIndex={10}>
+              {user ? <Menu width={200} shadow="md" withArrow zIndex={10}>
                 <Menu.Target>
                   <UserButton
-                    image="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=255&q=80"
-                    name={user.UserName}
-                    email={user.Email}
+                    image={user.picture as string}
+                    name={user.role as string}
+                    email={user.email as string}
                   />
                 </Menu.Target>
                 <Menu.Dropdown >
@@ -115,7 +119,7 @@ function dashboard(props: any) {
                     Logout
                   </Menu.Item>
                 </Menu.Dropdown>
-              </Menu> || <div style={{ width: 214 }}></div>}
+              </Menu> || <div style={{ width: 214 }}></div> : <SignIn/>}
             </Group>
 
           </div>

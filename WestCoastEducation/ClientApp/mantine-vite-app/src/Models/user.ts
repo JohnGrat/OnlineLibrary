@@ -1,27 +1,31 @@
 export interface UserProperties {
-    Id: string;
-    UserName: string;
-    Email: string;
-    Role: string;
+    id: string;
+    userName: string;
+    email: string;
+    role: string;
+    picture: string;
   }
   
    export class User implements UserProperties {
 
-    Id: string;
-    UserName: string;
-    Email: string;
-    Role: string;
+    id: string;
+    userName: string;
+    email: string;
+    role: string;
+    picture: string;
 
     constructor(props: UserProperties = {
-      Id: "",
-      UserName: "",
-      Email: "",
-      Role: "User"
+      id: "",
+      userName: "",
+      email: "",
+      role: "User",
+      picture: "",
     }) {
-      this.Id = props.Id;
-      this.UserName = props.UserName;
-      this.Email = props.Email;
-      this.Role = props.Role
+      this.id = props.id;
+      this.userName = props.userName;
+      this.email = props.email;
+      this.role = props.role
+      this.picture = props.picture
     }
 
   }

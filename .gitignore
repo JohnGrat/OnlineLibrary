@@ -368,3 +368,5 @@ yarn-error.log*
 /.changelog
 .npm/
 WestCoastEducation/ClientApp/wce-react-app/.env
+WestCoastEducation/ClientApp/mantine-vite-app/src/Components/Shell/_dashboard.tsx
+WestCoastEducation/ClientApp/mantine-vite-app/.env

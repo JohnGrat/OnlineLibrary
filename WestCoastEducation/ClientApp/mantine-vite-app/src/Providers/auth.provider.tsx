@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { User } from '../Models/user';
 import axiosApiInstance from '../Helpers/axios.api.instance'
-import { jwtHasExpired,  fromJwtToken } from '../Helpers/jwt.helper';
+import { fromJwtToken } from '../Helpers/jwt.helper';
 
 
 interface AuthServiceProviderProps {
@@ -17,7 +17,7 @@ interface AuthServiceProviderProps {
 
 const AccessTokenKey = 'access_token';
 const RefreshTokenKey = 'refresh_token';
-
+const UserKey = 'user';
 
 const AuthContext = createContext({});
 
@@ -27,57 +27,65 @@ export function AuthProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
-  const [user, setUser] = useState<User>();
-
+  const [user, setUser] = useState<User | null>();
 
   useEffect(() => {
-    const tokens : any = {
-      accessToken: getAccessToken(),
-      refreshToken: getRefreshToken(),
-    };
-
-    if (tokens.accessToken && tokens.refreshToken) {
-      updateUser(tokens);
+    const user = getUserStorage();
+    if(user){
+      setUser(user)
     }
   }, []);
 
-  async function login(user: { username: string, password: string }) {
-    const encodedCredentials = btoa(`${user.username}:${user.password}`);
-    const response: any = await axiosApiInstance.get('/authenticate/authorize', {
+  async function login( response: any ) {
+    const res: any = await axiosApiInstance.get('/authenticate/GoogleExternalLogin', {
       headers: {
-        'Authorization': `Basic ${encodedCredentials}`,
+        "Authorization": "Bearer " + response.credential
       },
     });
-    updateUser(response.data);
+    const { accessToken,  refreshToken} = res.data
+    updateUser({ accessToken,  refreshToken});
   };
 
   function logout() {
-    updateUser({ accessToken: null, refreshToken: null });
+    setUser(null);
+    setUserStorage(null);
+    setAccessToken("");
+    setRefreshToken("");
   }
 
-
-  function updateUser(tokens: { accessToken: string | null, refreshToken: string | null }) {
-    if (tokens.accessToken === null || tokens.refreshToken === null) {
-      setUser(undefined);
-      setAccessToken("");
-      setRefreshToken("");
-      return;
-    }
-  
-    const data = fromJwtToken(tokens.accessToken);
-    setUser(data);
-  
+  function updateUser(tokens: {accessToken: string, refreshToken: string}) {
+    const user = fromJwtToken(tokens.accessToken);
+    setUser(user);
+    setUserStorage(user)
     setAccessToken(tokens.accessToken);
     setRefreshToken(tokens.refreshToken);
   };
 
   function setAccessToken(token: string) {
+    console.log(token)
     if (token) {
-      localStorage.setItem(AccessTokenKey, token);
+      sessionStorage.setItem(AccessTokenKey, token);
     } else {
-      localStorage.removeItem(AccessTokenKey);
+      sessionStorage.removeItem(AccessTokenKey);
     }
   };
+
+  function setUserStorage(user: User | null) {
+    if (user) {
+      localStorage.setItem(UserKey, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(UserKey);
+    }
+  };
+
+  function getUserStorage(): User | null {
+    const userString = localStorage.getItem(UserKey);
+    if (userString) {
+      return JSON.parse(userString);
+    } else {
+      return null;
+    }
+  }
 
   function setRefreshToken(token: string) {
     if (token) {
@@ -87,21 +95,11 @@ export function AuthProvider({
     }
   };
 
-  function getAccessToken(){
-    return localStorage.getItem(AccessTokenKey);
-  };
-
-  function getRefreshToken(){
-    return localStorage.getItem(RefreshTokenKey);
-  };
-
-
   const memoedValue = useMemo(
     () => ({
       user,
+      logout,
       login,
-      logout
-
     }),
     [user]
   );

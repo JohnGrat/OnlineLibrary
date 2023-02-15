@@ -19,11 +19,7 @@ namespace Business.Dtos
 
         public decimal BookPrice { get; set; }
 
-        public int LanguageId { get; set; }
-
-        public int? PublisherId { get; set; }
-
-        public virtual BookLanguage Language { get; set; } = null!;
+        public string? LanguageName { get; set; }
 
         public virtual Publisher? Publisher { get; set; }
 

@@ -1,15 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
+using Nordlo.NetworkConfigurationManager.Config;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using WestCoastEducation.Auth;
 using WestCoastEducation.Helpers;
 
@@ -17,54 +13,23 @@ namespace WestCoastEducation.Controllers
 {
     [ApiController]
     [Route("api/authenticate")]
-    public class AuthenticateController : Controller
+    public class AuthenticateController : ControllerBase
     {
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IConfiguration _configuration;
         private readonly IJwtUtils _jwtUtils;
-        const string RefreshKey = "RefreshKey";
+        private readonly JwtConfig _config;
 
-        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IJwtUtils jwtUtils)
+        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IJwtUtils jwtUtils, JwtConfig config)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _configuration = configuration;
             _jwtUtils = jwtUtils;
+            _config = config;
         }
 
-        [HttpPost]
-        [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
-        {
-            var userExists = await _userManager.FindByNameAsync(model.Username);
-            if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
-
-            ApplicationUser user = new()
-            {
-                Email = model.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
-            };
-            var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
-            if (!await _roleManager.RoleExistsAsync(UserRoles.User))
-            {
-                await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
-            }
-
-            if (await _roleManager.RoleExistsAsync(UserRoles.User))
-            {
-                await _userManager.AddToRoleAsync(user, UserRoles.User);
-            }
-
-            return Ok(new Response { Status = "Success", Message = "User created successfully!" });
-        }
-
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         [Route("register-admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
@@ -92,18 +57,71 @@ namespace WestCoastEducation.Controllers
             {
                 await _userManager.AddToRoleAsync(user, UserRoles.Admin);
             }
-            if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
-            {
-                await _userManager.AddToRoleAsync(user, UserRoles.User);
-            }
+
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+        }
+
+        [HttpGet]
+        [Route("GoogleExternalLogin")]
+        public async Task<IActionResult> GoogleExternalLogin()
+        {
+
+            var accessToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            var payload = await _jwtUtils.VerifyGoogleToken(accessToken);
+            if (payload == null)
+            {
+                return Unauthorized();
+            }
+
+            var info = new UserLoginInfo("Google", payload.Subject, "Google");
+            var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(payload.Email);
+                if (user == null)
+                {
+                    ApplicationUser newUser = new()
+                    {
+                        Picture = payload.Picture,
+                        Email = payload.Email,
+                        SecurityStamp = Guid.NewGuid().ToString(),
+                        UserName = Guid.NewGuid().ToString()
+                    };
+                    var resultCreate = await _userManager.CreateAsync(newUser);
+
+                    if (await _roleManager.RoleExistsAsync(UserRoles.User))
+                    {
+                        await _userManager.AddToRoleAsync(newUser, UserRoles.User);
+                    }
+
+                    if (!resultCreate.Succeeded)
+                    {
+                        return Unauthorized();
+                    }
+                }
+                var resultLOgin = await _userManager.AddLoginAsync(user, info);
+                if (!resultLOgin.Succeeded)
+                {
+                    return Unauthorized();
+                }
+            }
+
+            string newAccessToken = IssueAccessToken(user).Result;
+            string refreshToken = IssueRefreshToken(user).Result;
+
+            return Ok(new
+            {
+                accessToken = newAccessToken,
+                refreshToken = refreshToken,
+            });
         }
 
         [HttpGet]
         [Route("authorize")]
         public async Task<IActionResult> Login()
         {
-            
+
             if (!Request.Headers.TryGetValue("Authorization", out var authHeader)
                 || !_jwtUtils.TryExtractClientCredentials(authHeader, out string username, out string password))
             {
@@ -111,40 +129,20 @@ namespace WestCoastEducation.Controllers
             }
 
             var user = await _userManager.FindByNameAsync(username);
+
             if (user != null && await _userManager.CheckPasswordAsync(user, password))
             {
-                var userRoles = await _userManager.GetRolesAsync(user);
 
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
-
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                }
-
-                var token = _jwtUtils.CreateToken(authClaims);
-                var refreshToken = _jwtUtils.GenerateRefreshToken();
-
-                _ = int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
-
-                user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
-
-                await _userManager.UpdateAsync(user);
+                string newAccessToken = IssueAccessToken(user).Result;
+                string refreshToken = IssueRefreshToken(user).Result;
 
                 return Ok(new
                 {
-                    accessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                    accessToken = newAccessToken,
                     refreshToken = refreshToken,
-                    expiration = token.ValidTo
                 });
             }
+
             return Unauthorized();
         }
 
@@ -152,40 +150,31 @@ namespace WestCoastEducation.Controllers
         [Route("refresh-token")]
         public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
         {
-
+        
             if (tokenModel is null)
             {
                 return BadRequest("Invalid client request");
             }
 
-            string? accessToken = tokenModel.AccessToken;
             string? refreshToken = tokenModel.RefreshToken;
 
-            var principal = _jwtUtils.GetPrincipalFromExpiredToken(accessToken);
-            if (principal == null)
-            {
-                return BadRequest("Invalid access token or refresh token");
-            }
-
-            string username = principal.Identity.Name;
-
-            var user = await _userManager.FindByNameAsync(username);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
             if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
             {
                 return BadRequest("Invalid access token or refresh token");
             }
 
-            var newAccessToken = _jwtUtils.CreateToken(principal.Claims.ToList());
-            var newRefreshToken = _jwtUtils.GenerateRefreshToken();
+            string newAccessToken = IssueAccessToken(user).Result;
+            string newRefreshToken = IssueRefreshToken(user).Result;
 
             user.RefreshToken = newRefreshToken;
             await _userManager.UpdateAsync(user);
 
-            return new ObjectResult(new
+            return Ok(new
             {
-                accessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-                refreshToken = newRefreshToken
+                accessToken = newAccessToken,
+                refreshToken = newRefreshToken,
             });
         }
 
@@ -239,6 +228,44 @@ namespace WestCoastEducation.Controllers
             configuration.AuthorizationEndpoint = "https://localhost:7253/authenticate/authorize";
             configuration.TokenEndpoint = "https://localhost:7253/authenticate/token";
             return Ok(configuration);
+        }
+
+        private async Task<string> IssueRefreshToken(ApplicationUser user)
+        {
+            var expiration = DateTime.UtcNow.Add(TimeSpan.FromMinutes(_config.RefreshTokenExpirationMinutes));
+            string refreshToken = _jwtUtils.GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(_config.RefreshTokenExpirationMinutes);
+
+            await _userManager.UpdateAsync(user);
+
+            return refreshToken;
+
+        }
+
+        private async Task<string> IssueAccessToken(ApplicationUser user)
+        {
+            var validUntil = DateTime.UtcNow.Add(TimeSpan.FromMinutes(_config.AccessTokenExpirationMinutes));
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var authClaims = new List<Claim>
+                {
+                    new Claim("picture", user.Picture),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
+
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            var accessToken = _jwtUtils.GenerateToken(authClaims, validUntil);
+
+            return accessToken;
         }
 
     }

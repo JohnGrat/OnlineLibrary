@@ -1,5 +1,5 @@
 import axiosApiInstance from "../Helpers/axios.api.instance";
-import BookBriefDto from "../Models/book";
+import { BookBriefModel,  BookModel } from "../Models/book";
 
 // export const createNoteFn = async (note: CreateNoteInput) => {
 //     const response = await axiosApiInstance.post<INoteResponse>("notes/", note);
@@ -29,8 +29,15 @@ export interface LoaderOptions {
 }
   
 export const getBooks = async (options : LoaderOptions) => {
-  const response = await axiosApiInstance.get<BookBriefDto[]>(`/book`, {
+  const response = await axiosApiInstance.get<BookBriefModel[]>(`/book`, {
     params: options,
   });
+  return response.data;
+};
+
+export const getOneBook = async (id: string ) => {
+  const response = await axiosApiInstance.get<BookModel>(`/book/${id}`)
+
+  console.log(response.data)
   return response.data;
 };

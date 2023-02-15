@@ -1,7 +1,9 @@
 ﻿using DataAccess.Models;
+using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Nordlo.NetworkConfigurationManager.Config;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -12,66 +14,83 @@ namespace WestCoastEducation.Helpers
 
     public interface IJwtUtils
     {
-        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);
+        //public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);
         public string GenerateRefreshToken();
-        public JwtSecurityToken CreateToken(List<Claim> authClaims);
+        public string GenerateToken(IEnumerable<Claim> claims, DateTime expires);
         public bool TryExtractClientCredentials(string authHeader, out string username, out string password);
+
+        Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string token);
     }
 
     public class JwtUtils : IJwtUtils
     {
 
-        private readonly IConfiguration _configuration;
+        private readonly JwtConfig _config;
 
 
-        public JwtUtils(IConfiguration configuration)
+        public JwtUtils(JwtConfig config)
         {
-           _configuration = configuration;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        public string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
+        //public string GenerateRefreshToken()
+        //{
+        //    var randomNumber = new byte[64];
+        //    using var rng = RandomNumberGenerator.Create();
+        //    rng.GetBytes(randomNumber);
+        //    return Convert.ToBase64String(randomNumber);
+        //}
 
-        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
-        {
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"])),
-                ValidateLifetime = false
-            };
+        //public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
+        //{
+        //    var tokenValidationParameters = new TokenValidationParameters
+        //    {
+        //        ValidateAudience = false,
+        //        ValidateIssuer = false,
+        //        ValidateIssuerSigningKey = true,
+        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"])),
+        //        ValidateLifetime = false
+        //    };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-                throw new SecurityTokenException("Invalid token");
+        //    var tokenHandler = new JwtSecurityTokenHandler();
+        //    var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+        //    if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        //        throw new SecurityTokenException("Invalid token");
 
-            return principal;
+        //    return principal;
 
-        }
+        //}
 
-        public JwtSecurityToken CreateToken(List<Claim> authClaims)
-        {
+        //public JwtSecurityToken CreateToken(List<Claim> authClaims)
+        //{
   
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-            _ = int.TryParse(_configuration["JWT:TokenValidityInMinutes"], out int tokenValidityInMinutes);
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+        //    _ = int.TryParse(_configuration["JWT:TokenValidityInMinutes"], out int tokenValidityInMinutes);
 
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-                );
+        //    var token = new JwtSecurityToken(
+        //        issuer: _configuration["JWT:ValidIssuer"],
+        //        audience: _configuration["JWT:ValidAudience"],
+        //        expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
+        //        claims: authClaims,
+        //        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+        //        );
 
-            return token;
+        //    return token;
+        //}
+
+
+        public string GenerateToken(IEnumerable<Claim> claims, DateTime expires)
+        {
+            var signingCredentials = new SigningCredentials(_config.SigningKey, SecurityAlgorithms.HmacSha256);
+            var jwt = new JwtSecurityToken(
+                issuer: _config.Issuer,
+                audience: _config.Audience,
+                claims,
+                DateTime.UtcNow,
+                expires,
+                signingCredentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
         public bool TryExtractClientCredentials(string authHeader, out string username, out string password)
@@ -101,5 +120,25 @@ namespace WestCoastEducation.Helpers
             return true;
         }
 
+
+        public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string token)
+        {
+            string clientID = _config.GoogleClientId ?? "";
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new List<string>() { clientID }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
+            return payload;
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
     }
 }

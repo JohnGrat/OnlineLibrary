@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Nordlo.NetworkConfigurationManager.Config;
 using System.Text;
 using System.Text.Json.Serialization;
 using WestCoastEducation.Auth;
@@ -15,18 +16,21 @@ using WestCoastEducation.Helpers;
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
-// Add services to the container.
-
-IdentityModelEventSource.ShowPII = true;
-
 
 // For Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration["IdentityDatabase:ConnectionString"]));
+
+//Add JwtConfig
+builder.Services.AddScoped<IJwtUtils, JwtUtils>();
+JwtConfig jwtConfig = configuration.GetSection(nameof(JwtConfig)).Get<JwtConfig>();
+builder.Services.AddSingleton(jwtConfig);
 
 // For Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -41,9 +45,9 @@ builder.Services.AddAuthentication(options =>
     options.Authority = "https://localhost:7253/api/authenticate";
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidAudience = configuration["JWT:ValidAudience"],
-        ValidIssuer = configuration["JWT:ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
+        ValidAudience = jwtConfig.Audience,
+        ValidIssuer = jwtConfig.Issuer,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.Secret)),
         ClockSkew = TimeSpan.FromSeconds(1),
         RequireExpirationTime = true,
         ValidateLifetime = true,

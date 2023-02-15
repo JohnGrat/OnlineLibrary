@@ -2,12 +2,13 @@ import { Box, Text, Grid, Group, TextInput, ActionIcon } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { DataTable } from 'mantine-datatable';
 import { getBooks } from '../API/books.api';
-import BookBriefModel from '../Models/book';
-import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { BookBriefModel } from '../Models/book';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { IconEdit, IconSearch, IconTrash } from '@tabler/icons-react';
-import { history } from 'react-router-guard';
+import { Link } from 'react-router-guard';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { Props } from '../config';
 
 dayjs.extend(relativeTime);
 
@@ -27,15 +28,6 @@ export default function useIsMounted() {
 
 export type LoaderVariant = 'oval' | 'bars' | 'dots';
 const PAGE_SIZE = 10;
-
-interface Props {
-  promise: () => void | Array<Promise<Function>>;
-  children: React.ReactNode;
-  history: History;
-  location: any
-  guardData?: object;
-}
-
 
 export function booksList(props : Props) {
   const { children, location, guardData } : Props = props;
@@ -108,24 +100,9 @@ export function booksList(props : Props) {
           textAlignment: 'right',
           render: (book) => (
             <Group spacing={4} position="right" noWrap>
-              <ActionIcon
-                color="blue"
-                onClick={(e: MouseEvent) => { 
-                  e.stopPropagation();
-                  history.push(`${location.pathname}/${book.id}`);
-                }}
-              >
-                <IconEdit size={16} />
-              </ActionIcon>
-              <ActionIcon
-                color="red"
-                onClick={(e: MouseEvent) => {
-                  e.stopPropagation();
-                  //deleteCompany(company);
-                }}
-              >
-                <IconTrash size={16} />
-              </ActionIcon>
+                <ActionIcon  color="blue" component={Link} to={`${location.pathname}/${book.id}`}>
+                  <IconEdit size={16} />
+                </ActionIcon>
             </Group>
           ),
         },]}

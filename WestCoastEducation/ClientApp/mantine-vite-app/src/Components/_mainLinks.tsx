@@ -1,26 +1,29 @@
 
-import { IconGitPullRequest, IconAlertCircle } from '@tabler/icons-react';
+import { IconBooks, IconAlertCircle, IconUsers, IconAddressBook } from '@tabler/icons-react';
 import { ThemeIcon, UnstyledButton, Group, Text } from '@mantine/core';
 import { Link } from "react-router-guard";
 import React  from 'react';
+import { User } from '../Models/user';
+import useAuth from '../Providers/auth.provider';
 
 interface MainLinkProps {
   icon: React.ReactNode;
   color: string;
   label: string;
   path: string;
+  role: string;
 }
 
-function MainLink({ icon, color, label, path }: MainLinkProps) {
+function MainLink({ role , icon, color, label, path }: MainLinkProps) {
+  const { user }: Partial<{ user: User }> = useAuth();
+
   return (
-    <UnstyledButton component={Link} to={path}
+    user?.role === role ? (<UnstyledButton component={Link} to={path}
       sx={(theme) => ({
         display: 'block',
-        width: '100%',
         padding: theme.spacing.xs,
         borderRadius: theme.radius.sm,
         color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : theme.black,
-
         '&:hover': {
           backgroundColor:
             theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
@@ -35,13 +38,15 @@ function MainLink({ icon, color, label, path }: MainLinkProps) {
         <Text size="sm">{label}</Text>
       </Group>
 
-    </UnstyledButton>
-  );
+    </UnstyledButton> ) : (
+      <></>
+    ));
 }
 
 const data = [
-  { icon: <IconGitPullRequest size={16} />, color: 'blue', label: 'Library', path: '/books' },
-  { icon: <IconAlertCircle size={16} />, color: 'teal', label: 'Authors', path: '/author'},
+  { role: "Admin", icon: <IconBooks size={16} />, color: 'blue', label: 'Books', path: '/books' },
+  { role: "Admin", icon: <IconAddressBook size={16} />, color: 'teal', label: 'Orders', path: '/author'},
+  { role: "Admin", icon: <IconUsers size={16} />, color: 'blue', label: 'Users', path: '/books' },
 ];
 
 export function MainLinks() {
