@@ -5,7 +5,7 @@ import { BookModel } from '../Models/book';
 import * as signalR from '@microsoft/signalr';
 import { hasLength, useForm } from '@mantine/form';
 import { CommentHtml } from '../Components/_comment';
-import axiosInstance from '../Helpers/axios.instance';
+import useAxios from '../Helpers/useAxios';
 import { User } from '../Models/user';
 import AuthContext from '../Providers/auth.provider';
 const BASEURL = import.meta.env.VITE_API_BASEURL
@@ -37,7 +37,7 @@ export const bookDetail = (props: any)  => {
     const [comments, setComments] = useState<Array<CommentDto>>([]);
     const { user }: Partial<{ user: User }> = useContext(AuthContext);
 
-    let api = axiosInstance();
+    let api = useAxios();
 
     const form = useForm({
         initialValues: {

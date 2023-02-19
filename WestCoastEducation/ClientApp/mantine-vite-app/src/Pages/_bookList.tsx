@@ -1,5 +1,5 @@
 import { Box, Text, Grid, Group, TextInput, ActionIcon } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue, useViewportSize } from '@mantine/hooks';
 import { DataTable } from 'mantine-datatable';
 import { BookBriefModel } from '../Models/book';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -8,7 +8,8 @@ import { Link } from 'react-router-guard';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Props } from '../config';
-import axiosInstance from '../Helpers/axios.instance';
+import useAxios from '../Helpers/useAxios';
+
 
 dayjs.extend(relativeTime);
 
@@ -33,18 +34,16 @@ export const bookList = (props : Props) => {
   const { children, location, guardData } : Props = props;
   const [page, setPage] = useState(1);
   const [records, setRecords] = useState<Array<BookBriefModel>>([]);
-  const [filteredRecords, setFilteredRecords] = useState<Array<BookBriefModel>>([].slice(0, PAGE_SIZE));
   const [pageRecords, setPageRecords] = useState<Array<BookBriefModel>>([].slice(0, PAGE_SIZE));
   const [fetching, setFetching] = useState(false);
   const isMounted = useIsMounted();
   const [query, setQuery] = useState('');
   const [debouncedQuery] = useDebouncedValue(query, 1000);
-
-  let api = axiosInstance();
+  let api = useAxios();
+  const { height, width } = useViewportSize();
 
   const load = async () => {
     setFetching(true);
-
 
     const response = await api.get<BookBriefModel[]>(`/book`, {
       params: { filter: query },
@@ -62,23 +61,14 @@ export const bookList = (props : Props) => {
 
   useEffect(() => {
     setPage(1)
-      setFilteredRecords(
-        records.filter((props  : any) => {
-          const stringProps : Array<string> = Object.values(props).filter((item : any) => typeof item === 'string') as Array<string>;
-          if(debouncedQuery == '' || stringProps.some((v : string) => v.toLowerCase().includes(debouncedQuery))){
-            return true;
-          }
-          return false;
-        })
-      );
   }, [records]);
 
 
  useEffect(() => {
   const from = (page - 1) * PAGE_SIZE;
    const to = from + PAGE_SIZE;
-   setPageRecords(filteredRecords.slice(from, to));
-   }, [page, filteredRecords]);
+   setPageRecords(records.slice(from, to));
+   }, [page, records]);
   
 
   return (
@@ -113,10 +103,11 @@ export const bookList = (props : Props) => {
             </Group>
           ),
         },]}
-        totalRecords={filteredRecords.length}
+        totalRecords={records.length}
         recordsPerPage={PAGE_SIZE}
         page={page}
         onPageChange={(p) => setPage(p)}
+        minHeight={height * 0.5}
       />
     </Box>
   </>

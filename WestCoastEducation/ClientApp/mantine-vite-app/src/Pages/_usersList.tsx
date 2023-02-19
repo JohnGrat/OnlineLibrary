@@ -1,4 +1,3 @@
 export const userList = () => {
-
- return(<></>)
+ return(<> Users list </>)
 }

@@ -11,17 +11,17 @@ export const axiosDefaultHeaders : RawAxiosRequestHeaders = {
   }
   
  
-const axiosInstance = (): AxiosInstance => {
+const useAxios = (): AxiosInstance => {
     const {accessToken, refreshToken, setAccessToken, setRefreshToken} : any = useContext(AuthContext);
 
-    const axiosInstance = axios.create({
+    const useAxios = axios.create({
         baseURL: BASEURL,
         headers: {
             ...axiosDefaultHeaders, 
         }
       });
     
-      axiosInstance.interceptors.request.use(async (req : any) => {
+      useAxios.interceptors.request.use(async (req : any) => {
 
         if (accessToken && !hasTokenExpired(accessToken)){
             req.headers['Authorization'] = `Bearer ${accessToken}` ;
@@ -44,9 +44,9 @@ const axiosInstance = (): AxiosInstance => {
         
         return req
     }) 
-    return axiosInstance
+    return useAxios
 }
 
-export default axiosInstance;
+export default useAxios;
 
 
