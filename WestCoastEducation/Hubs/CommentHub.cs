@@ -4,6 +4,7 @@ using Business.Repositories.Default;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 using WestCoastEducation.Auth;
 using WestCoastEducation.Models.Comments;
 
@@ -40,7 +41,8 @@ namespace WestCoastEducation.Hubs
         [Authorize]
         public async Task NewCommentAdded(CreateCommentModel model)
         {
-            var user = await _userManager.FindByNameAsync(Context.User.Identity.Name);
+            var user = await _userManager.FindByIdAsync(Context.User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
 
             CommentDto comment = new() { 
                 BookId = model.BookId,

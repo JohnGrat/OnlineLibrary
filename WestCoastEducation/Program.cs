@@ -38,17 +38,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 
-var test = new FirestoreDbBuilder
+//Add Firestore
+var fireStore = new FirestoreDbBuilder
 {
     ProjectId = "cloudchat-fe9dc",
     JsonCredentials = fireStoreCred()
 }.Build();
-
-//Add Firestore
-builder.Services.AddSingleton(test);
+builder.Services.AddSingleton(fireStore);
 
 
-
+//Add SignalR for the commentsHub
 builder.Services.AddSignalR();
 
 // Adding Authentication
