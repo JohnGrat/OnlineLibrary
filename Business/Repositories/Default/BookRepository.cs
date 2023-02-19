@@ -1,27 +1,34 @@
-﻿using Business.Dtos;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using DataAccess.Models;
 using DataAccess.Data;
+using Azure;
+using Business.Dtos.Books;
 
-namespace Business.Services.Default
+namespace Business.Repositories.Default
 {
-    public class BookService : IBookService
+    public class BookRepository : IRepository<BookDto, BookBriefDto>
     {
         private readonly BookstoreContext _context;
         private readonly IMapper _mapper;
         
-        public BookService(BookstoreContext context, IMapper mapper)
+        public BookRepository(BookstoreContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
-        public Task AddBook(BookDto book)
+
+        public Task<BookDto> AddAsync(BookDto entity)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<List<BookBriefDto>> GetAllBooks(string sort, string filter, int? page, int? pageSize)
+        public Task<BookDto> DeleteAsync(object id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<BookBriefDto>> GetAllAsync(string sort, string filter, int? page, int? pageSize)
         {
             var query = _context.Books
                 .Include(b => b.Language)
@@ -64,10 +71,10 @@ namespace Business.Services.Default
             return booksDto;
         }
 
-        public async Task<BookDto> GetBookById(string ISBN)
+        public async Task<BookDto> GetByIdAsync(object id)
         {
             var model = await _context.Books
-                .Where(b => b.Id == ISBN)
+                .Where(b => b.Id == id)
                 .Include(b => b.Language)
                 .Include(b => b.Authors)
                 .Include(b => b.Publisher)
@@ -75,7 +82,7 @@ namespace Business.Services.Default
 
             if (model == null)
             {
-                throw new ArgumentException($"book with isbn '{ISBN}' does not exist.");
+                throw new ArgumentException($"book with isbn '{id}' does not exist.");
             }
 
             var bookDto = _mapper.Map<BookDto>(model);
@@ -83,12 +90,7 @@ namespace Business.Services.Default
             return bookDto;
         }
 
-        public Task RemoveBook(string ISBN)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateBook(BookDto book)
+        public Task<BookDto> UpdateAsync(BookDto entity)
         {
             throw new NotImplementedException();
         }

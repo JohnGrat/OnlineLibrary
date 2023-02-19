@@ -1,4 +1,4 @@
-import BookBriefModel from "./book";
+import { BookBriefModel } from "./book";
 
 export interface IAuthorModel {
     id: number;

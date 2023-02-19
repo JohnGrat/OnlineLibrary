@@ -14,6 +14,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="firestore.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="firestore.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.59.0" />
@@ -34,7 +42,6 @@
 
   <ItemGroup>
     <Folder Include="ClientApp\" />
-    <Folder Include="Models\Reviews\" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,8 @@
-import { checkAuth } from "./Guards";
 import Dashboard from "./Components/Shell/_dashboard";
-import { booksList } from "./Pages/_booksList";
+import { bookList } from "./Pages/_bookList";
 import { bookDetail } from "./Pages/_bookDetail";
+import { checkAdmin } from "./Guards/checkAdmin";
+import { userList } from "./Pages/_usersList";
 
 
 export interface Props {
@@ -20,12 +21,16 @@ export default [
       {
         path: '/books',
         exact: true,
-        canActivate: [checkAuth],
-        component: booksList,
+        component: bookList,
       },
       {
         path: "/books/:id",
         component: bookDetail
+      },
+      {
+        path: "/users",
+        canActivate: [checkAdmin],
+        component: userList
       },
     ]
   }

@@ -1,4 +1,4 @@
-﻿namespace WestCoastEducation.Models.Book
+﻿namespace WestCoastEducation.Models.Books
 {
     public class CreateBookModel
     {

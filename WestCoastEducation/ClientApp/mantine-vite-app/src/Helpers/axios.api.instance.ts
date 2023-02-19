@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 const BASEURL = import.meta.env.VITE_API_BASEURL
 
 const axiosApiInstance = axios.create({
-  baseURL: BASEURL
+  baseURL: BASEURL + '/api'
 });
 axiosApiInstance.defaults.headers.common.Accept = 'application/json'  
 axiosApiInstance.defaults.headers.common['Access-control-allow-origin'] = '*'

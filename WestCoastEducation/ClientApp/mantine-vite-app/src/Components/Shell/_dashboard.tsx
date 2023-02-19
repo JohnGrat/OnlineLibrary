@@ -16,11 +16,11 @@ import {
 import { Brand } from '../_brand';
 import { UserButton } from '../_user';
 import { MainLinks } from '../_mainLinks';
-import useAuth from '../../Providers/auth.provider';
 import { User } from '../../Models/user';
 import { IconExternalLink } from '@tabler/icons-react';
-import { useState } from 'react';
-import { SignIn } from '../_login';
+import { useContext, useState } from 'react';
+import { SignInButton } from '../_signInButton';
+import AuthContext from '../../Providers/auth.provider';
 
 function convertURL(url: string) {
   const path = url.split('/').filter(Boolean);
@@ -43,7 +43,7 @@ interface Props {
 
 function dashboard(props: any) {
   const { children, history, location, guardData }: any = props;
-  const { user, logout }: Partial<{ user: User, logout: () => void }> = useAuth();
+  const { user, logout }: Partial<{ user: User, logout: () => void }> = useContext(AuthContext);
   const [opened, setOpened] = useState(false);
 
   const bcItems = convertURL(location.pathname)
@@ -104,9 +104,9 @@ function dashboard(props: any) {
               {user ? <Menu width={200} shadow="md" withArrow zIndex={10}>
                 <Menu.Target>
                   <UserButton
-                    image={user.picture as string}
-                    name={user.role as string}
-                    email={user.email as string}
+                    image={user.picture}
+                    name={user.displayName}
+                    role={user.role}
                   />
                 </Menu.Target>
                 <Menu.Dropdown >
@@ -119,7 +119,7 @@ function dashboard(props: any) {
                     Logout
                   </Menu.Item>
                 </Menu.Dropdown>
-              </Menu> || <div style={{ width: 214 }}></div> : <SignIn/>}
+              </Menu> || <div style={{ width: 214 }}></div> : <SignInButton />}
             </Group>
 
           </div>

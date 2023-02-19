@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Business.Dtos;
+using Business.Dtos.Books;
 using DataAccess.Models;
 
 namespace Business

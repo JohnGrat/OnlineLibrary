@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { createContext } from 'react';
 import ReactDOM from 'react-dom';
 import { NotificationsProvider } from '@mantine/notifications';
 import { ColorScheme, ColorSchemeProvider, MantineProvider } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import useAuth, { AuthProvider } from "./Providers/auth.provider";
+import { AuthProvider } from "./Providers/auth.provider";
 import { RouterGuard } from "react-router-guard";
 import config from "./config";
 

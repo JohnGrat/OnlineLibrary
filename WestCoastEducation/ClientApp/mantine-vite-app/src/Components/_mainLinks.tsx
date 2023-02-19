@@ -2,23 +2,23 @@
 import { IconBooks, IconAlertCircle, IconUsers, IconAddressBook } from '@tabler/icons-react';
 import { ThemeIcon, UnstyledButton, Group, Text } from '@mantine/core';
 import { Link } from "react-router-guard";
-import React  from 'react';
+import React, { useContext }  from 'react';
 import { User } from '../Models/user';
-import useAuth from '../Providers/auth.provider';
+import AuthContext from '../Providers/auth.provider';
 
 interface MainLinkProps {
   icon: React.ReactNode;
   color: string;
   label: string;
   path: string;
-  role: string;
+  role: string | null;
 }
 
-function MainLink({ role , icon, color, label, path }: MainLinkProps) {
-  const { user }: Partial<{ user: User }> = useAuth();
+function MainLink({ role = null, icon, color, label, path }: MainLinkProps) {
+  const { user }: Partial<{ user: User }> = useContext(AuthContext);
 
   return (
-    user?.role === role ? (<UnstyledButton component={Link} to={path}
+    role == null || user?.role == role  ? (<UnstyledButton component={Link} to={path}
       sx={(theme) => ({
         display: 'block',
         padding: theme.spacing.xs,
@@ -38,15 +38,12 @@ function MainLink({ role , icon, color, label, path }: MainLinkProps) {
         <Text size="sm">{label}</Text>
       </Group>
 
-    </UnstyledButton> ) : (
-      <></>
-    ));
+    </UnstyledButton>) : <></>)
 }
 
 const data = [
-  { role: "Admin", icon: <IconBooks size={16} />, color: 'blue', label: 'Books', path: '/books' },
-  { role: "Admin", icon: <IconAddressBook size={16} />, color: 'teal', label: 'Orders', path: '/author'},
-  { role: "Admin", icon: <IconUsers size={16} />, color: 'blue', label: 'Users', path: '/books' },
+  { role: null, icon: <IconBooks size={16} />, color: 'blue', label: 'Books', path: '/books' },
+  { role: "Admin", icon: <IconUsers size={16} />, color: 'pink', label: 'Users', path: '/users' },
 ];
 
 export function MainLinks() {

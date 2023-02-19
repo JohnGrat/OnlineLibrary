@@ -1,17 +1,22 @@
 using AutoMapper;
-using Business.Services;
-using Business.Services.Default;
+using Business.Dtos.Books;
+using Business.Dtos.Comments;
+using Business.Repositories;
+using Business.Repositories.Default;
 using DataAccess.Data;
+using Google.Api;
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Nordlo.NetworkConfigurationManager.Config;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using WestCoastEducation.Auth;
 using WestCoastEducation.Helpers;
+using WestCoastEducation.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -32,6 +37,20 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
+
+var test = new FirestoreDbBuilder
+{
+    ProjectId = "cloudchat-fe9dc",
+    JsonCredentials = fireStoreCred()
+}.Build();
+
+//Add Firestore
+builder.Services.AddSingleton(test);
+
+
+
+builder.Services.AddSignalR();
+
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -42,7 +61,6 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.Authority = "https://localhost:7253/api/authenticate";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidAudience = jwtConfig.Audience,
@@ -51,6 +69,24 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.FromSeconds(1),
         RequireExpirationTime = true,
         ValidateLifetime = true,
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+            // If the request is for our hub...
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/hubs/Commenthub")))
+            {
+                // Read the token out of the query string
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -64,11 +100,11 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration["BookstoreDatabase:ConnectionString"]));
 
 builder.Services.AddScoped<IJwtUtils, JwtUtils>();
-builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IRepository<BookDto, BookBriefDto>, BookRepository>();
+builder.Services.AddScoped<IRepository<CommentDto, CommentBriefDto>, CommentRepository>();
 
 var config = new MapperConfiguration(cfg =>
 {
@@ -88,16 +124,28 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapHub<CommentHub>("/hubs/Commenthub");
+
 app.MapControllers();
 
-app.UseCors(options =>
-       options.WithOrigins(configuration["Cors:AllowedOrigins"])
-           .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+
+app.UseCors(builder =>
+    builder.WithOrigins(configuration["Cors:AllowedOrigins"])
+           .AllowCredentials()
+           .AllowAnyHeader()
+           .AllowAnyMethod());
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.Run();
+
+
+
+static string fireStoreCred()
+{
+    using Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("WestCoastEducation.firestore.json");
+    using StreamReader reader = new(stream);
+    return reader.ReadToEnd();
+}

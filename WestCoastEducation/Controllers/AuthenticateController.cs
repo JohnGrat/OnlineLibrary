@@ -83,6 +83,7 @@ namespace WestCoastEducation.Controllers
                 {
                     ApplicationUser newUser = new()
                     {
+                        DisplayName = payload.Name,
                         Picture = payload.Picture,
                         Email = payload.Email,
                         SecurityStamp = Guid.NewGuid().ToString(),
@@ -107,6 +108,10 @@ namespace WestCoastEducation.Controllers
                 }
             }
 
+            user.Picture = payload.Picture;
+            user.DisplayName = payload.Name;
+            await _userManager.UpdateAsync(user);
+ 
             string newAccessToken = IssueAccessToken(user).Result;
             string refreshToken = IssueRefreshToken(user).Result;
 
@@ -214,21 +219,12 @@ namespace WestCoastEducation.Controllers
         [Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var user = await _userManager.FindByIdAsync(User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             var roles = await _userManager.GetRolesAsync(user);
             return Ok(new { username = user.UserName, roles = roles.ToArray(), email = user.Email, id = user.Id });
         }
 
-
-        [HttpGet(".well-known/openid-configuration")]
-        public async Task<IActionResult> GetOpenIdConfiguration()
-        {
-            var configuration = new OpenIdConnectConfiguration();
-            configuration.Issuer = "https://localhost:7253/";
-            configuration.AuthorizationEndpoint = "https://localhost:7253/authenticate/authorize";
-            configuration.TokenEndpoint = "https://localhost:7253/authenticate/token";
-            return Ok(configuration);
-        }
 
         private async Task<string> IssueRefreshToken(ApplicationUser user)
         {
@@ -253,7 +249,7 @@ namespace WestCoastEducation.Controllers
                 {
                     new Claim("picture", user.Picture),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Name, user.DisplayName),
                     new Claim(ClaimTypes.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };

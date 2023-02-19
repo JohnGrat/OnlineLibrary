@@ -1,6 +1,6 @@
 ﻿using Azure.Core;
-using Business.Dtos;
-using Business.Services;
+using Business.Dtos.Books;
+using Business.Repositories;
 using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,15 +9,14 @@ using System.Security.Claims;
 
 namespace WestCoastEducation.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/book")]
     public class BookController : ControllerBase
     {
 
-        private readonly IBookService _bookService;
+        private readonly IRepository<BookDto, BookBriefDto> _bookService;
 
-        public BookController(ILogger<BookController> logger, IBookService bookService)
+        public BookController(ILogger<BookController> logger, IRepository<BookDto, BookBriefDto> bookService)
         {
             _bookService = bookService;
         }
@@ -26,7 +25,7 @@ namespace WestCoastEducation.Controllers
         public async Task<ActionResult> GetAsync(string id)
         {
 
-            var model = await _bookService.GetBookById(id);
+            var model = await _bookService.GetByIdAsync(id);
 
             if (model == null)
             {
@@ -39,7 +38,7 @@ namespace WestCoastEducation.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAllBooks(string? sort, string? filter, int? page = 1, int? pageSize = 100)
         {
-            var models = await _bookService.GetAllBooks(sort, filter, page, pageSize);
+            var models = await _bookService.GetAllAsync(sort, filter, page, pageSize);
 
             return Ok(models);
         }

@@ -1,6 +1,6 @@
 export interface UserProperties {
     id: string;
-    userName: string;
+    displayName: string;
     email: string;
     role: string;
     picture: string;
@@ -9,20 +9,20 @@ export interface UserProperties {
    export class User implements UserProperties {
 
     id: string;
-    userName: string;
+    displayName: string;
     email: string;
     role: string;
     picture: string;
 
     constructor(props: UserProperties = {
       id: "",
-      userName: "",
+      displayName: "",
       email: "",
       role: "User",
       picture: "",
     }) {
       this.id = props.id;
-      this.userName = props.userName;
+      this.displayName = props.displayName;
       this.email = props.email;
       this.role = props.role
       this.picture = props.picture

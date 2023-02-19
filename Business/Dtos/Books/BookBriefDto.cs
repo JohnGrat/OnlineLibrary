@@ -5,24 +5,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Business.Dtos
+namespace Business.Dtos.Books
 {
-    public class BookDto
+    public class BookBriefDto
     {
         public string Id { get; set; } = null!;
 
         public string Title { get; set; } = null!;
 
-        public int? NumPages { get; set; }
+        public string? AuthorsName { get; set; }
 
         public DateTime? PublicationDate { get; set; }
 
-        public decimal BookPrice { get; set; }
-
         public string? LanguageName { get; set; }
 
-        public virtual Publisher? Publisher { get; set; }
+        public decimal BookPrice { get; set; }
 
-        public virtual ICollection<Author> Authors { get; } = new List<Author>();
     }
 }

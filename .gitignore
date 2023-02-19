@@ -370,3 +370,6 @@ yarn-error.log*
 WestCoastEducation/ClientApp/wce-react-app/.env
 WestCoastEducation/ClientApp/mantine-vite-app/src/Components/Shell/_dashboard.tsx
 WestCoastEducation/ClientApp/mantine-vite-app/.env
+WestCoastEducation/Properties/launchSettings.json
+WestCoastEducation/Properties/launchSettings.json
+WestCoastEducation/Properties/launchSettings.json

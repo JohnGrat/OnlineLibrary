@@ -5,12 +5,12 @@ import { Group, Avatar, Text, Menu, UnstyledButton, MediaQuery } from '@mantine/
 interface UserButtonProps extends React.ComponentPropsWithoutRef<'button'> {
   image: string;
   name: string;
-  email: string;
+  role: string;
   icon?: React.ReactNode;
 }
 
 export const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
-  ({ image, name, email, icon, ...others }: UserButtonProps, ref) => (
+  ({ image, name, role, icon, ...others }: UserButtonProps, ref) => (
     <UnstyledButton
       ref={ref}
       sx={(theme) => ({
@@ -36,7 +36,7 @@ export const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
           </Text>
 
           <Text color="dimmed" size="xs">
-            {email}
+            {role}
           </Text>
         </div>
         </MediaQuery>
