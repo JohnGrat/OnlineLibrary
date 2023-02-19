@@ -2,7 +2,7 @@ import { Box, Text, Grid, Group, TextInput, ActionIcon } from '@mantine/core';
 import { useDebouncedValue, useViewportSize } from '@mantine/hooks';
 import { DataTable } from 'mantine-datatable';
 import { BookBriefModel } from '../Models/book';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconEdit, IconSearch } from '@tabler/icons-react';
 import { Link } from 'react-router-guard';
 import dayjs from 'dayjs';
@@ -10,22 +10,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { Props } from '../config';
 import useAxios from '../Helpers/useAxios';
 
-
 dayjs.extend(relativeTime);
-
-export default function useIsMounted() {
-  const isMounted = useRef(false);
-
-  useEffect(() => {
-    isMounted.current = true;
-
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  return useCallback(() => isMounted.current, []);
-}
 
 export type LoaderVariant = 'oval' | 'bars' | 'dots';
 const PAGE_SIZE = 10;
@@ -36,7 +21,6 @@ export const bookList = (props : Props) => {
   const [records, setRecords] = useState<Array<BookBriefModel>>([]);
   const [pageRecords, setPageRecords] = useState<Array<BookBriefModel>>([].slice(0, PAGE_SIZE));
   const [fetching, setFetching] = useState(false);
-  const isMounted = useIsMounted();
   const [query, setQuery] = useState('');
   const [debouncedQuery] = useDebouncedValue(query, 1000);
   let api = useAxios();
@@ -44,15 +28,11 @@ export const bookList = (props : Props) => {
 
   const load = async () => {
     setFetching(true);
-
     const response = await api.get<BookBriefModel[]>(`/book`, {
       params: { filter: query },
     });
-
-    if (isMounted()) {
       setRecords(response.data);
       setFetching(false);
-    }
   };
 
   useEffect(() => {
@@ -107,10 +87,9 @@ export const bookList = (props : Props) => {
         recordsPerPage={PAGE_SIZE}
         page={page}
         onPageChange={(p) => setPage(p)}
-        minHeight={height * 0.5}
+        minHeight={height * 0.6}
       />
     </Box>
   </>
   )
-  // example-end
 }
