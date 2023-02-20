@@ -7,7 +7,7 @@ import React, {
 import { User } from '../Models/user';
 import { userFromJwt } from '../Helpers/jwt.helper';
 import axios from "axios";
-import { axiosDefaultHeaders } from "../Helpers/useAxios";
+import { axiosDefaultHeaders } from "../Hooks/useAxios";
 const BASEURL = import.meta.env.VITE_API_BASEURL
 
 const AuthContext = createContext({});

@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import axios, { AxiosInstance, AxiosRequestConfig, RawAxiosRequestHeaders } from "axios";
-import { userFromJwt, hasTokenExpired } from "./jwt.helper";
+import axios, { AxiosInstance, RawAxiosRequestHeaders } from "axios";
+import { hasTokenExpired } from "../Helpers/jwt.helper";
 import AuthContext from "../Providers/auth.provider";
 const BASEURL = import.meta.env.VITE_API_BASEURL + '/api'
 

@@ -41,7 +41,7 @@ builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true
 //Add Firestore
 var fireStore = new FirestoreDbBuilder
 {
-    ProjectId = "cloudchat-fe9dc",
+    ProjectId = configuration["Firestore:ProjectId"],
     JsonCredentials = fireStoreCred()
 }.Build();
 builder.Services.AddSingleton(fireStore);

@@ -8,7 +8,7 @@ import { Link } from 'react-router-guard';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Props } from '../config';
-import useAxios from '../Helpers/useAxios';
+import useAxios from '../Hooks/useAxios';
 
 dayjs.extend(relativeTime);
 
@@ -32,6 +32,7 @@ export const bookList = (props : Props) => {
       params: { filter: query },
     });
       setRecords(response.data);
+      setPage(1);
       setFetching(false);
   };
 
@@ -40,16 +41,10 @@ export const bookList = (props : Props) => {
   }, [debouncedQuery]);
 
   useEffect(() => {
-    setPage(1)
-  }, [records]);
-
-
- useEffect(() => {
-  const from = (page - 1) * PAGE_SIZE;
-   const to = from + PAGE_SIZE;
-   setPageRecords(records.slice(from, to));
-   }, [page, records]);
-  
+    const from = (page - 1) * PAGE_SIZE;
+     const to = from + PAGE_SIZE;
+     setPageRecords(records.slice(from, to));
+     }, [page, records]);
 
   return (
     <>
@@ -83,7 +78,7 @@ export const bookList = (props : Props) => {
             </Group>
           ),
         },]}
-        totalRecords={records.length}
+        totalRecords={records?.length}
         recordsPerPage={PAGE_SIZE}
         page={page}
         onPageChange={(p) => setPage(p)}
@@ -93,3 +88,5 @@ export const bookList = (props : Props) => {
   </>
   )
 }
+
+
