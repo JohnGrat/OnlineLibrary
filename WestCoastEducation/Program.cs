@@ -23,7 +23,7 @@ ConfigurationManager configuration = builder.Configuration;
 
 
 // For Entity Framework
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration["IdentityDatabase:ConnectionString"]));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityDatabase")));
 
 //Add JwtConfig
 builder.Services.AddScoped<IJwtUtils, JwtUtils>();
@@ -99,7 +99,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration["BookstoreDatabase:ConnectionString"]));
+builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration.GetConnectionString("BookstoreDatabase")));
 
 builder.Services.AddScoped<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IRepository<BookDto, BookBriefDto>, BookRepository>();
