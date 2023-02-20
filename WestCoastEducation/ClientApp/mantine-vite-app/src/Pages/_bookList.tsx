@@ -12,7 +12,6 @@ import useAxios from '../Hooks/useAxios';
 
 dayjs.extend(relativeTime);
 
-
 export type LoaderVariant = 'oval' | 'bars' | 'dots';
 const PAGE_SIZE = 10;
 
