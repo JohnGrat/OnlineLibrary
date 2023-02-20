@@ -373,5 +373,5 @@ WestCoastEducation/ClientApp/mantine-vite-app/.env
 WestCoastEducation/Properties/launchSettings.json
 WestCoastEducation/Properties/launchSettings.json
 WestCoastEducation/Properties/launchSettings.json
-WestCoastEducation/firestore.json
 .gitignore
+WestCoastEducation/firestore.Development.json
