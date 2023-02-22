@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace Nordlo.NetworkConfigurationManager.Config
+namespace WestCoastEducation.Config
 {
     public class JwtConfig
     {
