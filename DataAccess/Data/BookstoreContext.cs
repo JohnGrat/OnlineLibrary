@@ -51,7 +51,7 @@ public partial class BookstoreContext : DbContext
 
             entity.ToTable("address");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("address_id");
             entity.Property(e => e.City)
                 .HasMaxLength(100)
                 .IsUnicode(false)
@@ -76,7 +76,7 @@ public partial class BookstoreContext : DbContext
 
             entity.ToTable("author");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("author_id");
             entity.Property(e => e.AuthorBirthday)
                 .HasColumnType("date")
                 .HasColumnName("author_birthday");
@@ -95,14 +95,14 @@ public partial class BookstoreContext : DbContext
 
         modelBuilder.Entity<Book>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("pk_book");
+            entity.HasKey(e => e.BookId).HasName("pk_book");
 
             entity.ToTable("book");
 
-            entity.Property(e => e.Id)
+            entity.Property(e => e.BookId)
                 .HasMaxLength(13)
                 .IsUnicode(false)
-                .HasColumnName("id");
+                .HasColumnName("book_id");
             entity.Property(e => e.BookPrice)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("book_price");
@@ -150,7 +150,7 @@ public partial class BookstoreContext : DbContext
 
             entity.ToTable("book_language");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("language_id");
             entity.Property(e => e.LanguageCode)
                 .HasMaxLength(8)
                 .IsUnicode(false)
@@ -206,7 +206,7 @@ public partial class BookstoreContext : DbContext
 
             entity.ToTable("customer");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("customer_id");
             entity.Property(e => e.AddressId).HasColumnName("address_id");
             entity.Property(e => e.CustomerEmail)
                 .HasMaxLength(255)
@@ -269,7 +269,7 @@ public partial class BookstoreContext : DbContext
 
             entity.ToTable("order");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("order_id");
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
             entity.Property(e => e.OrderDate).HasColumnName("order_date");
             entity.Property(e => e.ShippingDate).HasColumnName("shipping_date");
@@ -292,7 +292,7 @@ public partial class BookstoreContext : DbContext
 
             entity.ToTable("publisher");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("publisher_id");
             entity.Property(e => e.PublisherName)
                 .HasMaxLength(400)
                 .IsUnicode(false)

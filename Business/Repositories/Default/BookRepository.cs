@@ -74,7 +74,7 @@ namespace Business.Repositories.Default
         public async Task<BookDto> GetByIdAsync(object id)
         {
             var model = await _context.Books
-                .Where(b => b.Id == id)
+                .Where(b => b.BookId == id)
                 .Include(b => b.Language)
                 .Include(b => b.Authors)
                 .Include(b => b.Publisher)

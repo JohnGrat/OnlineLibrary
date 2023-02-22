@@ -9,7 +9,7 @@ namespace Business.Dtos.Books
 {
     public class BookBriefDto
     {
-        public string Id { get; set; } = null!;
+        public string BookId { get; set; } = null!;
 
         public string Title { get; set; } = null!;
 

@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccess.Models;
 
 public partial class Book
 {
-    public string Id { get; set; } = null!;
+    public string BookId { get; set; }
 
     public string Title { get; set; } = null!;
 
