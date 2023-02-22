@@ -2,7 +2,6 @@
 using AutoMapper;
 using DataAccess.Models;
 using DataAccess.Data;
-using Azure;
 using Business.Dtos.Books;
 
 namespace Business.Repositories.Default

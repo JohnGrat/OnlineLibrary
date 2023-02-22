@@ -1,6 +1,4 @@
-﻿using DataAccess.Models;
-using Google.Apis.Auth;
-using Microsoft.EntityFrameworkCore;
+﻿using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WestCoastEducation.Config;

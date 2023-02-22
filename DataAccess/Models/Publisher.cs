@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DataAccess.Models;
 
@@ -9,5 +10,6 @@ public partial class Publisher
 
     public string? PublisherName { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<Book> Books { get; } = new List<Book>();
 }

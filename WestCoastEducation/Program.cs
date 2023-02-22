@@ -1,54 +1,71 @@
-using AutoMapper;
 using Business.Dtos.Books;
 using Business.Dtos.Comments;
-using Business.Repositories;
 using Business.Repositories.Default;
-using DataAccess.Data;
+using Business.Repositories;
 using Google.Api;
-using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Nordlo.NetworkConfigurationManager.Config;
-using System.Reflection;
+using Microsoft.Net.Http.Headers;
 using System.Text;
-using System.Text.Json.Serialization;
 using WestCoastEducation.Auth;
+using WestCoastEducation.Config;
+using WestCoastEducation.Endpoints;
+using WestCoastEducation.EndPoints;
 using WestCoastEducation.Helpers;
+using DataAccess.Data;
+using Google.Cloud.Firestore;
+using System.Reflection;
+using AutoMapper;
+using System.Text.Json.Serialization;
 using WestCoastEducation.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+
 ConfigurationManager configuration = builder.Configuration;
 
+//Add JwtConfig
+JwtConfig jwtConfig = configuration.GetSection(nameof(JwtConfig)).Get<JwtConfig>();
+builder.Services.AddSingleton(jwtConfig);
+
+
+//AutoMapper
+var config = new MapperConfiguration(cfg =>
+{
+    cfg.AddProfile(new Business.AutoMapperProfile());
+});
+var mapper = config.CreateMapper();
+builder.Services.AddSingleton(mapper);
 
 // For Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityDatabase")));
+builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration.GetConnectionString("BookstoreDatabase")));
 
-//Add JwtConfig
+
+//Lowercase urls
+builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
+
+//Dependency Inject Services
 builder.Services.AddScoped<IJwtUtils, JwtUtils>();
-JwtConfig jwtConfig = configuration.GetSection(nameof(JwtConfig)).Get<JwtConfig>();
-builder.Services.AddSingleton(jwtConfig);
+builder.Services.AddScoped<IRepository<BookDto, BookBriefDto>, BookRepository>();
+builder.Services.AddScoped<IRepository<CommentDto, CommentBriefDto>, CommentRepository>();
 
 // For Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
-
-//Add Firestore
-var fireStore = new FirestoreDbBuilder
+//Avoid object cycle
+builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    ProjectId = configuration["Firestore:ProjectId"],
-    JsonCredentials = fireStoreCred()
-}.Build();
-builder.Services.AddSingleton(fireStore);
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
 
-//Add SignalR for the commentsHub
-builder.Services.AddSignalR();
 
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -88,58 +105,74 @@ builder.Services.AddAuthentication(options =>
         }
     };
 });
+builder.Services.AddAuthorization();
 
 
-builder.Services.AddControllers().AddJsonOptions(options =>
+//Add Firestore
+var fireStore = new FirestoreDbBuilder
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    ProjectId = configuration["Firestore:ProjectId"],
+    JsonCredentials = fireStoreCred()
+}.Build();
+builder.Services.AddSingleton(fireStore);
+
+
+//Add SignalR for the commentsHub
+builder.Services.AddSignalR();
+
+
+//AddSpa
+builder.Services.AddSpaStaticFiles(configuration => {
+    configuration.RootPath = "ClientApp/dist";
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Create the IServiceProvider instance
+IServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
 
-builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration.GetConnectionString("BookstoreDatabase")));
-
-builder.Services.AddScoped<IJwtUtils, JwtUtils>();
-builder.Services.AddScoped<IRepository<BookDto, BookBriefDto>, BookRepository>();
-builder.Services.AddScoped<IRepository<CommentDto, CommentBriefDto>, CommentRepository>();
-
-var config = new MapperConfiguration(cfg =>
-{
-    cfg.AddProfile(new Business.AutoMapperProfile());
-});
-var mapper = config.CreateMapper();
-builder.Services.AddSingleton(mapper);
+// Initialize the ServiceLocator
+ServiceLocator.Initialize(serviceProvider);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.MapGet("/", () => "Hello World!");
 
-app.UseHttpsRedirection();
-
+//Add SignalR for the commentsHub
 app.MapHub<CommentHub>("/hubs/Commenthub");
 
-app.MapControllers();
+//Mapping endpoints
+app.MapAuthEndpoints();
+app.MapBookEndpoints();
 
 
-app.UseCors(builder =>
-    builder.WithOrigins(configuration["Cors:AllowedOrigins"])
-           .AllowCredentials()
-           .AllowAnyHeader()
-           .AllowAnyMethod());
+
+var spaPath = "/app";
+app.Map(new PathString(spaPath), client =>
+{
+    client.UseSpaStaticFiles();
+    client.UseSpa(spa => {
+        spa.Options.SourcePath = "ClientApp";
+        spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                ResponseHeaders headers = ctx.Context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true,
+                    MustRevalidate = true
+                };
+            }
+        };
+    });
+});
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
-app.Run();
 
+
+app.Run();
 
 
 static string fireStoreCred()

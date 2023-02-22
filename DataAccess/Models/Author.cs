@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace DataAccess.Models;
 
@@ -16,5 +17,6 @@ public partial class Author
 
     public string? AuthorName { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<Book> Books { get; } = new List<Book>();
 }
