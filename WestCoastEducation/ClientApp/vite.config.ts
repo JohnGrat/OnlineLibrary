@@ -4,7 +4,6 @@ import mkcert from 'vite-plugin-mkcert'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    base: '/app',
     server: {
         https: true,
         port: 6363

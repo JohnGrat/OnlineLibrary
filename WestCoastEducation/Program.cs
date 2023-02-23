@@ -2,7 +2,6 @@ using Business.Dtos.Books;
 using Business.Dtos.Comments;
 using Business.Repositories.Default;
 using Business.Repositories;
-using Google.Api;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Identity;
@@ -134,11 +133,6 @@ ServiceLocator.Initialize(serviceProvider);
 
 var app = builder.Build();
 
-app.MapGet("/", context => {
-    context.Response.Redirect("/app");
-    return Task.CompletedTask;
-});
-
 //Add SignalR for the commentsHub
 app.MapHub<CommentHub>("/hubs/Commenthub");
 
@@ -147,29 +141,27 @@ app.MapAuthEndpoints();
 app.MapBookEndpoints();
 
 
-
-var spaPath = "/app";
-app.Map(new PathString(spaPath), client =>
-{
-    client.UseSpaStaticFiles();
-    client.UseSpa(spa => {
-        spa.Options.SourcePath = "ClientApp";
-        spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
+//Add Spa
+app.UseSpaStaticFiles();
+app.UseSpa(spa => {
+    spa.Options.SourcePath = "ClientApp";
+    spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
+    {
+        OnPrepareResponse = ctx =>
         {
-            OnPrepareResponse = ctx =>
+            ResponseHeaders headers = ctx.Context.Response.GetTypedHeaders();
+            headers.CacheControl = new CacheControlHeaderValue
             {
-                ResponseHeaders headers = ctx.Context.Response.GetTypedHeaders();
-                headers.CacheControl = new CacheControlHeaderValue
-                {
-                    NoCache = true,
-                    NoStore = true,
-                    MustRevalidate = true
-                };
-            }
-        };
-    });
+                NoCache = true,
+                NoStore = true,
+                MustRevalidate = true
+            };
+        }
+    };
 });
 
+
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 

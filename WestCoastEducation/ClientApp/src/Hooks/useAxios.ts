@@ -40,7 +40,6 @@ const useAxios = (): AxiosInstance => {
                 
             req.headers['Authorization'] = `Bearer ${response.data.accessToken}` ;
         }
-
         return req
     }) 
     return useAxios
