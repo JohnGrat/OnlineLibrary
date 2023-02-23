@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Text.Json;
-using WestCoastEducation.Models.Token;
 
 namespace WestCoastEducation.EndPoints
 {
