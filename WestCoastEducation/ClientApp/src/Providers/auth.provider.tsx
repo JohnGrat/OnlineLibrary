@@ -8,10 +8,10 @@ import { User } from '../Models/user';
 import { userFromJwt } from '../Helpers/jwt.helper';
 import axios from "axios";
 import { axiosDefaultHeaders } from "../Hooks/useAxios";
+import { baseUrl } from "../App";
 
 const AuthContext = createContext({});
 export default AuthContext;
-
 
 export const AuthProvider = ({children} : { children: ReactNode })  => {
   const [user, setUser] = useState(getUserStorage())
@@ -20,7 +20,8 @@ export const AuthProvider = ({children} : { children: ReactNode })  => {
 
 
   async function login( response: any ) {
-    const res: any = await axios.get('/api/auth/googleexternallogin', {
+    const url = `${baseUrl}/auth/googleexternallogin`;
+    const res: any = await axios.get(url, {
       headers: {
         ...axiosDefaultHeaders, 
         Authorization: `Bearer ${response.credential}`,
@@ -62,25 +63,25 @@ export const AuthProvider = ({children} : { children: ReactNode })  => {
   };
 
   useEffect(()=> {
-    if(refreshToken){
-      setUserStorage(user);
-      setRefreshTokenStorage(refreshToken);
-    } else {
-      setUserStorage(null);
-      setRefreshTokenStorage(null);
-    }
-  }, [refreshToken])
-
-  useEffect(()=> {
     if(accessToken){
       const user = userFromJwt(accessToken);
       setUser(user);
+      setUserStorage(user);
       setAccessTokenStorage(accessToken);
     } else {
       setAccessTokenStorage(null);
     }
   }, [accessToken])
 
+
+  useEffect(()=> {
+    if(refreshToken){
+      setRefreshTokenStorage(refreshToken);
+    } else {
+      setUserStorage(null);
+      setRefreshTokenStorage(null);
+    }
+  }, [refreshToken])
 
   let contextData = {
     user:user,

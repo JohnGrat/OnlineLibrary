@@ -21,9 +21,10 @@ using System.Reflection;
 using AutoMapper;
 using System.Text.Json.Serialization;
 using WestCoastEducation.Hubs;
+using Microsoft.OpenApi.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
-
 ConfigurationManager configuration = builder.Configuration;
 
 //Add JwtConfig
@@ -44,6 +45,25 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration.GetConnectionString("BookstoreDatabase")));
 
 
+//Swagger DEV
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+});
+
+//CorsPolicy DEV
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins(configuration["Frontend:Server"])
+            .AllowCredentials()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 //Lowercase urls
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
@@ -63,8 +83,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
-
-
 
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -95,7 +113,7 @@ builder.Services.AddAuthentication(options =>
             // If the request is for our hub...
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/hubs/Commenthub")))
+                (path.StartsWithSegments("/api/hubs/commenthub")))
             {
                 // Read the token out of the query string
                 context.Token = accessToken;
@@ -121,7 +139,8 @@ builder.Services.AddSignalR();
 
 
 //AddSpa
-builder.Services.AddSpaStaticFiles(configuration => {
+builder.Services.AddSpaStaticFiles(configuration =>
+{
     configuration.RootPath = "ClientApp/dist";
 });
 
@@ -134,38 +153,49 @@ ServiceLocator.Initialize(serviceProvider);
 var app = builder.Build();
 
 //Add SignalR for the commentsHub
-app.MapHub<CommentHub>("/hubs/Commenthub");
+app.MapHub<CommentHub>("/api/hubs/commenthub");
 
 //Mapping endpoints
 app.MapAuthEndpoints();
 app.MapBookEndpoints();
 
 
-//Add Spa
-app.UseSpaStaticFiles();
-app.UseSpa(spa => {
-    spa.Options.SourcePath = "ClientApp";
-    spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
+if (app.Environment.IsDevelopment())
+{
+    //Swagger
+    app.UseCors();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
     {
-        OnPrepareResponse = ctx =>
+        options.RoutePrefix = "";
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
+    });
+}
+else
+{
+    //Spa
+    app.UseSpaStaticFiles();
+    app.UseSpa(spa => {
+        spa.Options.SourcePath = "ClientApp";
+        spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
         {
-            ResponseHeaders headers = ctx.Context.Response.GetTypedHeaders();
-            headers.CacheControl = new CacheControlHeaderValue
+            OnPrepareResponse = ctx =>
             {
-                NoCache = true,
-                NoStore = true,
-                MustRevalidate = true
-            };
-        }
-    };
-});
-
+                ResponseHeaders headers = ctx.Context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true,
+                    MustRevalidate = true
+                };
+            }
+        };
+    });
+}
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
-
 
 app.Run();
 

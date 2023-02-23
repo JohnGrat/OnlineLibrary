@@ -8,6 +8,7 @@ import { CommentHtml } from '../Components/_comment';
 import useAxios from '../Hooks/useAxios';
 import { User } from '../Models/user';
 import AuthContext from '../Providers/auth.provider';
+import { baseUrl } from '../App';
 
 interface CommentDto {
     id: number;
@@ -71,7 +72,7 @@ export const bookDetail = (props: any)  => {
 
     useEffect(() => {
         const newConnection = new signalR.HubConnectionBuilder()
-            .withUrl('/hubs/Commenthub', {
+            .withUrl(`${baseUrl}/hubs/commenthub`, {
                 accessTokenFactory: () => sessionStorage.access_token
             })
             .build();

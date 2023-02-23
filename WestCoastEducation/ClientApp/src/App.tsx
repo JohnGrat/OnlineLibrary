@@ -29,3 +29,5 @@ export const App: React.FC = () => {
     </MantineProvider>
   );
 };
+
+export const baseUrl = import.meta.env.DEV ? import.meta.env.VITE_BASE_URL : '/api'

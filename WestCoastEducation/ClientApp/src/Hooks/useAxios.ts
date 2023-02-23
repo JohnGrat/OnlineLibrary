@@ -2,6 +2,8 @@ import { useContext } from "react";
 import axios, { AxiosInstance, RawAxiosRequestHeaders } from "axios";
 import { hasTokenExpired } from "../Helpers/jwt.helper";
 import AuthContext from "../Providers/auth.provider";
+import { baseUrl } from "../App";
+
 
 export const axiosDefaultHeaders : RawAxiosRequestHeaders = {
     Accept: 'application/json',
@@ -9,17 +11,16 @@ export const axiosDefaultHeaders : RawAxiosRequestHeaders = {
     'Access-control-allow-origin': '*'
   }
   
- 
 const useAxios = (): AxiosInstance => {
     const {accessToken, refreshToken, setAccessToken, setRefreshToken} : any = useContext(AuthContext);
 
     const useAxios = axios.create({
-        baseURL: '/api',
+        baseURL: baseUrl,
         headers: {
             ...axiosDefaultHeaders, 
         }
       });
-    
+
       useAxios.interceptors.request.use(async (req : any) => {
 
         if (accessToken && !hasTokenExpired(accessToken)){
@@ -28,7 +29,7 @@ const useAxios = (): AxiosInstance => {
         } 
         else if(refreshToken != undefined) {
 
-            const response = await axios.post('/auth/refresh-token', {
+            const response = await axios.post(`${baseUrl}/auth/refresh-token`, {
                 refreshToken
             }, { headers: axiosDefaultHeaders});
             
