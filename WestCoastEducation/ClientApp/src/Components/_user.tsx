@@ -42,9 +42,7 @@ export const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
         </MediaQuery>
         {icon || <IconChevronRight size={16} />}
 
-        
       </Group>
     </UnstyledButton>
   )
 );
-

@@ -1,14 +1,10 @@
 ﻿using Business.Dtos.Comments;
 using Google.Cloud.Firestore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Business.Repositories.Default;
 
 public class CommentRepository : IRepository<CommentDto, CommentBriefDto>
 {
-    
     private readonly CollectionReference _commentCollection;
 
     public CommentRepository(FirestoreDb context)
@@ -33,16 +29,17 @@ public class CommentRepository : IRepository<CommentDto, CommentBriefDto>
             .Select(nameof(CommentDto.Id))
             .GetSnapshotAsync()
             .ContinueWith(snapshot =>
-            {                   
-            var highestIdDocument = snapshot.Result.Documents.FirstOrDefault();
-            if (highestIdDocument == null)
             {
-            return 0;
-            }
-            else
-            {
-            return highestIdDocument.ConvertTo<CommentDto>().Id;
-            }});
+                var highestIdDocument = snapshot.Result.Documents.FirstOrDefault();
+                if (highestIdDocument == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return highestIdDocument.ConvertTo<CommentDto>().Id;
+                }
+            });
 
         // Generate a new ID by adding 1 to the highest ID
         entity.Id = highestId + 1;

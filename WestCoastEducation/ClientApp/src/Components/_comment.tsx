@@ -28,7 +28,6 @@ interface CommentHtmlProps {
 }
 
 export function CommentHtml({ postedAt, body, author }: CommentHtmlProps) {
-
   const { classes } = useStyles();
   return (
     <Paper withBorder shadow="xs" mt="md" radius="md" className={classes.comment}>

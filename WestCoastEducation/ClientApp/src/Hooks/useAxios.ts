@@ -4,48 +4,43 @@ import { hasTokenExpired } from "../Helpers/jwt.helper";
 import AuthContext from "../Providers/auth.provider";
 import { baseUrl } from "../App";
 
-
-export const axiosDefaultHeaders : RawAxiosRequestHeaders = {
+export const axiosDefaultHeaders: RawAxiosRequestHeaders = {
     Accept: 'application/json',
     'Content-Type': 'application/json',
     'Access-control-allow-origin': '*'
-  }
-  
+}
+
 const useAxios = (): AxiosInstance => {
-    const {accessToken, refreshToken, setAccessToken, setRefreshToken} : any = useContext(AuthContext);
+    const { accessToken, refreshToken, setAccessToken, setRefreshToken }: any = useContext(AuthContext);
 
     const useAxios = axios.create({
         baseURL: baseUrl,
         headers: {
-            ...axiosDefaultHeaders, 
+            ...axiosDefaultHeaders,
         }
-      });
+    });
 
-      useAxios.interceptors.request.use(async (req : any) => {
-
-        if (accessToken && !hasTokenExpired(accessToken)){
-            req.headers['Authorization'] = `Bearer ${accessToken}` ;
+    useAxios.interceptors.request.use(async (req: any) => {
+        if (accessToken && !hasTokenExpired(accessToken)) {
+            req.headers['Authorization'] = `Bearer ${accessToken}`;
             return req
-        } 
-        else if(refreshToken != undefined) {
-
+        }
+        else if (refreshToken != undefined) {
             const response = await axios.post(`${baseUrl}/auth/refresh-token`, {
                 refreshToken
-            }, { headers: axiosDefaultHeaders});
-            
+            }, { headers: axiosDefaultHeaders });
+
             sessionStorage.access_token = response.data.accessToken
             localStorage.refresh_token = response.data.refreshToken
 
             setAccessToken(response.data.accessToken)
             setRefreshToken(response.data.refreshToken)
-                
-            req.headers['Authorization'] = `Bearer ${response.data.accessToken}` ;
+
+            req.headers['Authorization'] = `Bearer ${response.data.accessToken}`;
         }
         return req
-    }) 
+    })
     return useAxios
 }
 
 export default useAxios;
-
-

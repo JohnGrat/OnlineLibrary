@@ -4,10 +4,10 @@ export const checkAdmin = () => {
     const user = getUserStorage()
 
     return new Promise(async (resolve, reject) => {
-          if(user?.role == "Admin"){
+        if (user?.role == "Admin") {
             resolve(null);
-          } else {
+        } else {
             reject(new Error('/'));
-          }
-  })
+        }
+    })
 };

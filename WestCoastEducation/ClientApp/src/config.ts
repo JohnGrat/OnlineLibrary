@@ -4,35 +4,32 @@ import { bookDetail } from "./Pages/_bookDetail";
 import { checkAdmin } from "./Guards/checkAdmin";
 import { userList } from "./Pages/_usersList";
 
-
 export interface Props {
-  children: React.ReactNode;
-  history: History;
-  location: any
-  guardData?: object;
+    children: React.ReactNode;
+    history: History;
+    location: any
+    guardData?: object;
 }
 
-
 export default [
-  {
-    path: '/',
-    component: Dashboard,
-    routes: [
-      {
-        path: '/books',
-        exact: true,
-        component: bookList,
-      },
-      {
-        path: "/books/:id",
-        component: bookDetail
-      },
-      {
-        path: "/users",
-        canActivate: [checkAdmin],
-        component: userList
-      },
-    ]
-  }
+    {
+        path: '/',
+        component: Dashboard,
+        routes: [
+            {
+                path: '/books',
+                exact: true,
+                component: bookList,
+            },
+            {
+                path: "/books/:id",
+                component: bookDetail
+            },
+            {
+                path: "/users",
+                canActivate: [checkAdmin],
+                component: userList
+            },
+        ]
+    }
 ];
-

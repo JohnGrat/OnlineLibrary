@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
-namespace DataAccess.Models;
+﻿namespace DataAccess.Models;
 
 public partial class Customer
 {

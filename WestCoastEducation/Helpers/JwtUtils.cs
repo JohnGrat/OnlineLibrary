@@ -1,20 +1,20 @@
 ﻿using Google.Apis.Auth;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using WestCoastEducation.Config;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using WestCoastEducation.Config;
 
 namespace WestCoastEducation.Helpers
 {
-
     public interface IJwtUtils
     {
         //public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);
         public string GenerateRefreshToken();
+
         public string GenerateToken(IEnumerable<Claim> claims, DateTime expires);
+
         public bool TryExtractClientCredentials(string authHeader, out string username, out string password);
 
         Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string token);
@@ -22,9 +22,7 @@ namespace WestCoastEducation.Helpers
 
     public class JwtUtils : IJwtUtils
     {
-
         private readonly JwtConfig _config;
-
 
         public JwtUtils(JwtConfig config)
         {
@@ -71,7 +69,6 @@ namespace WestCoastEducation.Helpers
             password = parts[1];
             return true;
         }
-
 
         public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string token)
         {

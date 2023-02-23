@@ -87,7 +87,7 @@ function dashboard(props: any) {
                 mr="xl"
               />
             </MediaQuery>
-            
+
             <MediaQuery smallerThan="sm" styles={{ display: 'none' }}>
               <div>
                   <Brand/>

@@ -5,7 +5,6 @@ namespace WestCoastEducation.Config
 {
     public class JwtConfig
     {
-
         public string? GoogleClientId { get; set; }
 
         public string? Secret { get; set; }

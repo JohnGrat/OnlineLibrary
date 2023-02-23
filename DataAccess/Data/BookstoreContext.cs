@@ -40,7 +40,6 @@ public partial class BookstoreContext : DbContext
 
     public virtual DbSet<Store> Stores { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
@@ -305,7 +304,7 @@ public partial class BookstoreContext : DbContext
 
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
-                .IsUnicode(false); 
+                .IsUnicode(false);
             entity.Property(e => e.Firstname)
                 .HasMaxLength(255)
                 .IsUnicode(false);
@@ -316,9 +315,8 @@ public partial class BookstoreContext : DbContext
             entity.Property(e => e.TotaltAmountSpentThisYear).HasColumnType("decimal(38, 2)");
         });
 
-
         OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    private partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

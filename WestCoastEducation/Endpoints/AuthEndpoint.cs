@@ -1,23 +1,16 @@
-﻿
-
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using WestCoastEducation.Auth;
 using WestCoastEducation.Config;
 using WestCoastEducation.Helpers;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.EntityFrameworkCore;
-using Google.Api;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Data;
-using System.Text.Json;
 
 namespace WestCoastEducation.EndPoints
 {
     public static class AuthEndpoint
     {
-
         private static UserManager<ApplicationUser> _userManager;
         private static RoleManager<IdentityRole> _roleManager;
         private static IJwtUtils _jwtUtils;
@@ -47,7 +40,6 @@ namespace WestCoastEducation.EndPoints
         [Authorize(Roles = UserRoles.Admin)]
         private static async Task<IResult> RegisterAdmin(RegisterModel model)
         {
-
             var userExists = await _userManager.FindByNameAsync(model.Username);
             if (userExists != null)
                 return Results.BadRequest("user already exists");
@@ -73,7 +65,6 @@ namespace WestCoastEducation.EndPoints
             }
 
             return Results.Ok("User Created");
-
         }
 
         private static async Task<IResult> GoogleExternalLogin(HttpRequest request)
@@ -134,7 +125,6 @@ namespace WestCoastEducation.EndPoints
 
         private static async Task<IResult> Login(HttpContext context)
         {
-
             if (!context.Request.Headers.TryGetValue("Authorization", out var authHeader)
                 || !_jwtUtils.TryExtractClientCredentials(authHeader, out string username, out string password))
             {
@@ -145,7 +135,6 @@ namespace WestCoastEducation.EndPoints
 
             if (user != null && await _userManager.CheckPasswordAsync(user, password))
             {
-
                 string newAccessToken = IssueAccessToken(user).Result;
                 string refreshToken = IssueRefreshToken(user).Result;
 
@@ -161,7 +150,6 @@ namespace WestCoastEducation.EndPoints
 
         private static async Task<IResult> RefreshToken(TokenModel tokenModel)
         {
-
             if (tokenModel is null)
             {
                 return Results.BadRequest("Unauthorize");
@@ -189,11 +177,9 @@ namespace WestCoastEducation.EndPoints
             });
         }
 
-
         [Authorize(Roles = UserRoles.Admin)]
         private static async Task<IResult> Revoke(string username)
         {
-
             var user = await _userManager.FindByNameAsync(username);
             if (user == null) return Results.BadRequest("Invalid user name");
 
@@ -233,7 +219,6 @@ namespace WestCoastEducation.EndPoints
             await _userManager.UpdateAsync(user);
 
             return refreshToken;
-
         }
 
         private static async Task<string> IssueAccessToken(ApplicationUser user)
@@ -260,6 +245,5 @@ namespace WestCoastEducation.EndPoints
 
             return accessToken;
         }
-
     }
 }

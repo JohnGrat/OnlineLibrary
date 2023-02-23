@@ -1,11 +1,4 @@
-﻿using DataAccess.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Business.Dtos.Books
+﻿namespace Business.Dtos.Books
 {
     public class BookBriefDto
     {
@@ -20,6 +13,5 @@ namespace Business.Dtos.Books
         public string? LanguageName { get; set; }
 
         public decimal BookPrice { get; set; }
-
     }
 }

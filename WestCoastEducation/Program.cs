@@ -1,28 +1,26 @@
+using AutoMapper;
 using Business.Dtos.Books;
 using Business.Dtos.Comments;
-using Business.Repositories.Default;
 using Business.Repositories;
+using Business.Repositories.Default;
+using DataAccess.Data;
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using WestCoastEducation.Auth;
 using WestCoastEducation.Config;
 using WestCoastEducation.Endpoints;
 using WestCoastEducation.EndPoints;
 using WestCoastEducation.Helpers;
-using DataAccess.Data;
-using Google.Cloud.Firestore;
-using System.Reflection;
-using AutoMapper;
-using System.Text.Json.Serialization;
 using WestCoastEducation.Hubs;
-using Microsoft.OpenApi.Models;
-
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -30,7 +28,6 @@ ConfigurationManager configuration = builder.Configuration;
 //Add JwtConfig
 JwtConfig jwtConfig = configuration.GetSection(nameof(JwtConfig)).Get<JwtConfig>();
 builder.Services.AddSingleton(jwtConfig);
-
 
 //AutoMapper
 var config = new MapperConfiguration(cfg =>
@@ -43,7 +40,6 @@ builder.Services.AddSingleton(mapper);
 // For Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityDatabase")));
 builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration.GetConnectionString("BookstoreDatabase")));
-
 
 //Swagger DEV
 builder.Services.AddEndpointsApiExplorer();
@@ -76,7 +72,6 @@ builder.Services.AddScoped<IRepository<CommentDto, CommentBriefDto>, CommentRepo
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
-
 
 //Avoid object cycle
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -124,7 +119,6 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 
-
 //Add Firestore
 var fireStore = new FirestoreDbBuilder
 {
@@ -133,10 +127,8 @@ var fireStore = new FirestoreDbBuilder
 }.Build();
 builder.Services.AddSingleton(fireStore);
 
-
 //Add SignalR for the commentsHub
 builder.Services.AddSignalR();
-
 
 //AddSpa
 builder.Services.AddSpaStaticFiles(configuration =>
@@ -159,7 +151,6 @@ app.MapHub<CommentHub>("/api/hubs/commenthub");
 app.MapAuthEndpoints();
 app.MapBookEndpoints();
 
-
 if (app.Environment.IsDevelopment())
 {
     //Swagger
@@ -175,7 +166,8 @@ else
 {
     //Spa
     app.UseSpaStaticFiles();
-    app.UseSpa(spa => {
+    app.UseSpa(spa =>
+    {
         spa.Options.SourcePath = "ClientApp";
         spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
         {
@@ -198,7 +190,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.Run();
-
 
 static string fireStoreCred()
 {

@@ -1,6 +1,5 @@
 ﻿using Business.Dtos.Comments;
 using Business.Repositories;
-using Business.Repositories.Default;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -10,7 +9,6 @@ using WestCoastEducation.Models.Comments;
 
 namespace WestCoastEducation.Hubs
 {
-
     public class CommentHub : Hub
     {
         private readonly IRepository<CommentDto, CommentBriefDto> _commentRepository;
@@ -44,7 +42,8 @@ namespace WestCoastEducation.Hubs
             var user = await _userManager.FindByIdAsync(Context.User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
 
-            CommentDto comment = new() { 
+            CommentDto comment = new()
+            {
                 BookId = model.BookId,
                 Body = model.Body,
                 PostedAt = DateTime.UtcNow,
@@ -53,7 +52,6 @@ namespace WestCoastEducation.Hubs
                     Name = user.DisplayName,
                     Image = user.Picture
                 }
-               
             };
 
             await _commentRepository.AddAsync(comment);

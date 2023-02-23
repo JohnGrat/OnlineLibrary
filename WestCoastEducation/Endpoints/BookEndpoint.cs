@@ -22,7 +22,6 @@ namespace WestCoastEducation.Endpoints
 
         private static async Task<IResult> GetOneBook(string id)
         {
-
             var model = await _bookService.GetByIdAsync(id);
 
             if (model == null)

@@ -1,8 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using DataAccess.Models;
-using DataAccess.Data;
+﻿using AutoMapper;
 using Business.Dtos.Books;
+using DataAccess.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Business.Repositories.Default
 {
@@ -10,7 +9,7 @@ namespace Business.Repositories.Default
     {
         private readonly BookstoreContext _context;
         private readonly IMapper _mapper;
-        
+
         public BookRepository(BookstoreContext context, IMapper mapper)
         {
             _context = context;
@@ -49,9 +48,11 @@ namespace Business.Repositories.Default
                     case "title_asc":
                         query = query.OrderBy(b => b.Title);
                         break;
+
                     case "title_desc":
                         query = query.OrderByDescending(b => b.Title);
                         break;
+
                     default:
                         break;
                 }

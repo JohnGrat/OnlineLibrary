@@ -21,16 +21,14 @@ interface CommentDto {
     };
 }
 
-
 interface CreateCommentDto {
     bookId: string;
     body: string;
 }
 
-
 const PRIMARY_COL_HEIGHT = 300;
 
-export const bookDetail = (props: any)  => {
+export const bookDetail = (props: any) => {
     const [book, setbook] = useState<BookModel>();
     const [loading, setLoading] = useState(false);
     const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
@@ -59,7 +57,6 @@ export const bookDetail = (props: any)  => {
         }
     }
 
-
     async function getInitialComments() {
         try {
             const initialComments = await connection?.invoke('GetCommentsForBook', props.match.params.id);
@@ -68,7 +65,6 @@ export const bookDetail = (props: any)  => {
             console.error(err);
         }
     }
-
 
     useEffect(() => {
         const newConnection = new signalR.HubConnectionBuilder()
@@ -88,7 +84,6 @@ export const bookDetail = (props: any)  => {
             });
 
             connection.on('CommentAdded', (comment: CommentDto) => {
-
                 setLoading(true)
 
                 setComments((prevComments) => [...prevComments, comment]);
@@ -103,7 +98,6 @@ export const bookDetail = (props: any)  => {
             };
         }
     }, [connection,]);
-
 
     const theme = useMantineTheme();
 
@@ -123,7 +117,6 @@ export const bookDetail = (props: any)  => {
     const SECONDARY_COL_HEIGHT = PRIMARY_COL_HEIGHT / 2 - theme.spacing.md / 2;
 
     return (
-
 
         <Card p="xl">
 
