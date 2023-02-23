@@ -26,7 +26,6 @@ export const AuthProvider = ({children} : { children: ReactNode })  => {
         Authorization: `Bearer ${response.credential}`,
       },
     });
-    console.log(res)
     if(res.status === 200){
       setAccessToken(res.data.accessToken);
       setRefreshToken(res.data.refreshToken);

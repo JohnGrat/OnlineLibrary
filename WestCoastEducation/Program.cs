@@ -134,7 +134,10 @@ ServiceLocator.Initialize(serviceProvider);
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", context => {
+    context.Response.Redirect("/app");
+    return Task.CompletedTask;
+});
 
 //Add SignalR for the commentsHub
 app.MapHub<CommentHub>("/hubs/Commenthub");

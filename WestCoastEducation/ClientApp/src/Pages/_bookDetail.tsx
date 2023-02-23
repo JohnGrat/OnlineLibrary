@@ -82,7 +82,6 @@ export const bookDetail = (props: any)  => {
     useEffect(() => {
         if (connection) {
             connection.start().then(() => {
-                console.log('Connected!');
                 getInitialComments()
                 connection.invoke('SubscribeToComments', props.match.params.id);
             });
