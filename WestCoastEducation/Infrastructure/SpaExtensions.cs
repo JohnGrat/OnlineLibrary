@@ -4,8 +4,9 @@ using WestCoastEducation.Config;
 
 namespace WestCoastEducation.Infrastructure
 {
-    public static class FrontendExtensions
+    public static class SpaExtensions
     {
+
         public static IApplicationBuilder UseSpaConfiguration(this IApplicationBuilder app)
         {
                 //Spa
@@ -30,18 +31,6 @@ namespace WestCoastEducation.Infrastructure
             return app;
         }
 
-        public static IApplicationBuilder UseSwaggerConfiguration(this IApplicationBuilder app)
-        {
-            //Swagger
-            app.UseCors();
-            app.UseSwagger();
-            app.UseSwaggerUI(options =>
-            {
-                options.RoutePrefix = "";
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-            });
-
-            return app;
-        }
+       
     }
 }

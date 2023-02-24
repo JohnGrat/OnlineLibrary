@@ -5,7 +5,7 @@ using WestCoastEducation.Config;
 
 namespace WestCoastEducation.Infrastructure
 {
-    public static class AuthenticationExtension
+    public static class AuthenticationExtensions
     {
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtConfig jwtConfig)
         {

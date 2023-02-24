@@ -97,7 +97,7 @@ app.MapBookEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSpaConfiguration();
+    app.UseSwaggerConfiguration();
 }
 else
 {

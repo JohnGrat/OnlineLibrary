@@ -2,7 +2,7 @@
 
 namespace WestCoastEducation.Infrastructure;
 
-public static class SwaggerExtension
+public static class SwaggerExtensions
 {
     public static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
@@ -26,5 +26,19 @@ public static class SwaggerExtension
         });
 
         return services;
+    }
+
+    public static IApplicationBuilder UseSwaggerConfiguration(this IApplicationBuilder app)
+    {
+        //Swagger
+        app.UseCors();
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.RoutePrefix = "";
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
+        });
+
+        return app;
     }
 }
