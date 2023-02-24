@@ -4,12 +4,10 @@ using WestCoastEducation.Config;
 
 namespace WestCoastEducation.Infrastructure
 {
-    public static class SpaExtension
+    public static class FrontendExtensions
     {
-        public static IApplicationBuilder UseFrontend(this IApplicationBuilder app, FrontendType env)
+        public static IApplicationBuilder UseSpaConfiguration(this IApplicationBuilder app)
         {
-            if (env == FrontendType.SPA)
-            {
                 //Spa
                 app.UseSpaStaticFiles();
                 app.UseSpa(spa =>
@@ -29,18 +27,19 @@ namespace WestCoastEducation.Infrastructure
                         }
                     };
                 });
-            }
-            else
+            return app;
+        }
+
+        public static IApplicationBuilder UseSwaggerConfiguration(this IApplicationBuilder app)
+        {
+            //Swagger
+            app.UseCors();
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
             {
-                //Swagger
-                app.UseCors();
-                app.UseSwagger();
-                app.UseSwaggerUI(options =>
-                {
-                    options.RoutePrefix = "";
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-                });
-            }
+                options.RoutePrefix = "";
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
+            });
 
             return app;
         }

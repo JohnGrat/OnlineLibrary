@@ -97,11 +97,11 @@ app.MapBookEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseFrontend(FrontendType.Swagger);
+    app.UseSpaConfiguration();
 }
 else
 {
-    app.UseFrontend(FrontendType.SPA);
+    app.UseSpaConfiguration();
 }
 
 app.UseHttpsRedirection();
