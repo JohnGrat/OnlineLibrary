@@ -1,16 +1,11 @@
 # WestCoastEducation
-A online bookstore 
+A online library
 
-This is a full-stack project that implements a bookstore application utilizing Entity Framework, ASP.NET Core, and React. 
+This is a full-stack project that implements a library application using ASP.NET Core and React. 
 
-The backend is designed using a layered architecture that includes data, business and presentation layers. 
-A separate SQL database will handle authentication and act as the identity provider for the system. 
-API endpoints will be secured through the use of ASP.NET Core middleware and JSON Web Tokens (JWT). 
-Unit tests will be implemented to ensure proper functionality. 
+The backend is built with .NET Core and follows a layered architecture that comprises data, business,and presentation layers.
+It communicates with two SQL databases, one for identity and the other for book information. 
+It utilizes a Firestore database to handle user-generated content such as comments on the website.
 
-On the frontend, React will be used to provide diverse user interfaces and options based on the user's account role. 
-There will be at least three different types of user roles: Administrators, Employees, and Customers.
-
-* Administrators will have full access to all aspects of the application such as managing books, orders, and user accounts. 
-* Employees will be able to manage books and orders but will not have access to user accounts. 
-* Customers will only be able to view books, add them to their cart, and place orders.
+the frontend offers Google sign-in functionality and stores JSON Web Tokens. 
+It uses the Mantine component library, React-router-guards, and Axios.
