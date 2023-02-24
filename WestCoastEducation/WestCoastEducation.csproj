@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="firestore.Development.json" />
     <Content Remove="firestore.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="firestore.Development.json" />
     <EmbeddedResource Include="firestore.json" />
   </ItemGroup>
 

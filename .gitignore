@@ -375,3 +375,4 @@ WestCoastEducation/Properties/launchSettings.json
 WestCoastEducation/Properties/launchSettings.json
 .gitignore
 WestCoastEducation/firestore.Development.json
+WestCoastEducation/ClientApp/.env.development

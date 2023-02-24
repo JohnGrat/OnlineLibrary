@@ -318,5 +318,5 @@ public partial class BookstoreContext : DbContext
         OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    private partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

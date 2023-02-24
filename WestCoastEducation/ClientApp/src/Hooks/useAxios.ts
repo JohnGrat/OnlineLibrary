@@ -5,46 +5,46 @@ import AuthContext from "../Providers/auth.provider";
 import { baseUrl } from "../App";
 
 export const axiosDefaultHeaders: RawAxiosRequestHeaders = {
-  Accept: "application/json",
-  "Content-Type": "application/json",
-  "Access-control-allow-origin": "*",
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "Access-control-allow-origin": "*",
 };
 
 const useAxios = (): AxiosInstance => {
-  const { accessToken, refreshToken, setAccessToken, setRefreshToken }: any =
-    useContext(AuthContext);
+    const { accessToken, refreshToken, setAccessToken, setRefreshToken }: any =
+        useContext(AuthContext);
 
-  const useAxios = axios.create({
-    baseURL: baseUrl,
-    headers: {
-      ...axiosDefaultHeaders,
-    },
-  });
-
-  useAxios.interceptors.request.use(async (req: any) => {
-    if (accessToken && !hasTokenExpired(accessToken)) {
-      req.headers["Authorization"] = `Bearer ${accessToken}`;
-      return req;
-    } else if (refreshToken != undefined) {
-      const response = await axios.post(
-        `${baseUrl}/auth/refresh-token`,
-        {
-          refreshToken,
+    const useAxios = axios.create({
+        baseURL: baseUrl,
+        headers: {
+            ...axiosDefaultHeaders,
         },
-        { headers: axiosDefaultHeaders }
-      );
+    });
 
-      sessionStorage.access_token = response.data.accessToken;
-      localStorage.refresh_token = response.data.refreshToken;
+    useAxios.interceptors.request.use(async (req: any) => {
+        if (accessToken && !hasTokenExpired(accessToken)) {
+            req.headers["Authorization"] = `Bearer ${accessToken}`;
+            return req;
+        } else if (refreshToken != undefined) {
+            const response = await axios.post(
+                `${baseUrl}/auth/refresh-token`,
+                {
+                    refreshToken,
+                },
+                { headers: axiosDefaultHeaders }
+            );
 
-      setAccessToken(response.data.accessToken);
-      setRefreshToken(response.data.refreshToken);
+            sessionStorage.access_token = response.data.accessToken;
+            localStorage.refresh_token = response.data.refreshToken;
 
-      req.headers["Authorization"] = `Bearer ${response.data.accessToken}`;
-    }
-    return req;
-  });
-  return useAxios;
+            setAccessToken(response.data.accessToken);
+            setRefreshToken(response.data.refreshToken);
+
+            req.headers["Authorization"] = `Bearer ${response.data.accessToken}`;
+        }
+        return req;
+    });
+    return useAxios;
 };
 
 export default useAxios;
