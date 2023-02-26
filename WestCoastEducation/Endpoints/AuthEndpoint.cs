@@ -1,11 +1,8 @@
-﻿using Azure;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Net.Http.Headers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using WestCoastEducation.Auth;
@@ -74,7 +71,6 @@ namespace WestCoastEducation.EndPoints
 
         private static async Task<IResult> GoogleExternalLogin(HttpRequest request)
         {
-
             var accessToken = request.Headers["Authorization"].ToString().Split(" ")[1];
 
             var payload = await _jwtUtils.VerifyGoogleToken(accessToken);
@@ -123,13 +119,12 @@ namespace WestCoastEducation.EndPoints
             var properties = new AuthenticationProperties();
             properties.IsPersistent = true;
 
-            var principal = await IssueCookie(user);
+            var principal = await CreateClaimsPrincipalFromUser(user);
 
             await request.HttpContext.SignInAsync(principal, properties);
 
             return Results.Ok();
         }
-
 
         private static async Task<IResult> Login(HttpRequest request)
         {
@@ -254,8 +249,7 @@ namespace WestCoastEducation.EndPoints
             return accessToken;
         }
 
-
-        private static async Task<ClaimsPrincipal> IssueCookie(ApplicationUser user)
+        private static async Task<ClaimsPrincipal> CreateClaimsPrincipalFromUser(ApplicationUser user)
         {
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
             var roles = await _userManager.GetRolesAsync(user);
