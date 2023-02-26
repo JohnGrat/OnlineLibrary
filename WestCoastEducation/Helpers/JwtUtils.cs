@@ -22,9 +22,9 @@ namespace WestCoastEducation.Helpers
 
     public class JwtUtils : IJwtUtils
     {
-        private readonly JwtConfig _config;
+        private readonly AuthConfig _config;
 
-        public JwtUtils(JwtConfig config)
+        public JwtUtils(AuthConfig config)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }

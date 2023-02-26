@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using WestCoastEducation.Auth;
@@ -11,10 +16,10 @@ namespace WestCoastEducation.EndPoints
 {
     public static class AuthEndpoint
     {
-        private static UserManager<ApplicationUser> _userManager;
-        private static RoleManager<IdentityRole> _roleManager;
-        private static IJwtUtils _jwtUtils;
-        private static JwtConfig _jwtConfig;
+        private static readonly UserManager<ApplicationUser> _userManager;
+        private static readonly RoleManager<IdentityRole> _roleManager;
+        private static readonly IJwtUtils _jwtUtils;
+        private static readonly AuthConfig _authConfig;
 
         static AuthEndpoint()
         {
@@ -22,7 +27,7 @@ namespace WestCoastEducation.EndPoints
             _userManager = ServiceLocator.GetService<UserManager<ApplicationUser>>();
             _roleManager = ServiceLocator.GetService<RoleManager<IdentityRole>>();
             _jwtUtils = ServiceLocator.GetService<IJwtUtils>();
-            _jwtConfig = ServiceLocator.GetService<JwtConfig>();
+            _authConfig = ServiceLocator.GetService<AuthConfig>();
         }
 
         public static WebApplication MapAuthEndpoints(this WebApplication app)
@@ -32,8 +37,8 @@ namespace WestCoastEducation.EndPoints
             app.MapPost("/api/auth/revoke/{username}", Revoke);
             app.MapPost("/api/auth/refresh-token", RefreshToken);
             app.MapGet("/api/auth/googleexternallogin", (HttpRequest request) => GoogleExternalLogin(request));
-            app.MapGet("/api/auth/login", context => Login(context));
-            app.MapGet("/api/auth/me", context => GetCurrentUser(context));
+            app.MapGet("/api/auth/login", (HttpRequest request) => Login(request));
+            app.MapGet("/api/auth/me", (HttpRequest request) => GetCurrentUser(request));
             return app;
         }
 
@@ -69,6 +74,7 @@ namespace WestCoastEducation.EndPoints
 
         private static async Task<IResult> GoogleExternalLogin(HttpRequest request)
         {
+
             var accessToken = request.Headers["Authorization"].ToString().Split(" ")[1];
 
             var payload = await _jwtUtils.VerifyGoogleToken(accessToken);
@@ -113,19 +119,21 @@ namespace WestCoastEducation.EndPoints
 
             user.Picture = payload.Picture;
             user.DisplayName = payload.Name;
-            await _userManager.UpdateAsync(user);
 
-            string newAccessToken = IssueAccessToken(user).Result;
-            string refreshToken = IssueRefreshToken(user).Result;
+            var properties = new AuthenticationProperties();
+            properties.IsPersistent = true;
 
-            var data = new { accessToken = newAccessToken, refreshToken = refreshToken };
+            var principal = await IssueCookie(user);
 
-            return Results.Ok(data);
+            await request.HttpContext.SignInAsync(principal, properties);
+
+            return Results.Ok();
         }
 
-        private static async Task<IResult> Login(HttpContext context)
+
+        private static async Task<IResult> Login(HttpRequest request)
         {
-            if (!context.Request.Headers.TryGetValue("Authorization", out var authHeader)
+            if (!request.HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader)
                 || !_jwtUtils.TryExtractClientCredentials(authHeader, out string username, out string password))
             {
                 return Results.BadRequest("Unauthorize");
@@ -201,20 +209,20 @@ namespace WestCoastEducation.EndPoints
         }
 
         [Authorize]
-        private static async Task<IResult> GetCurrentUser(HttpContext context)
+        private static async Task<IResult> GetCurrentUser(HttpRequest request)
         {
-            var user = await _userManager.FindByIdAsync(context.User.Claims
+            var user = await _userManager.FindByIdAsync(request.HttpContext.User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             var roles = await _userManager.GetRolesAsync(user);
-            return Results.Ok(new { username = user.UserName, roles = roles.ToArray(), email = user.Email, id = user.Id });
+            return Results.Ok(new { id = user.Id, displayName = user.DisplayName, role = roles.FirstOrDefault(), email = user.Email, picture = user.Picture });
         }
 
         private static async Task<string> IssueRefreshToken(ApplicationUser user)
         {
-            var expiration = DateTime.UtcNow.Add(TimeSpan.FromMinutes(_jwtConfig.RefreshTokenExpirationMinutes));
+            var expiration = DateTime.UtcNow.Add(TimeSpan.FromMinutes(_authConfig.RefreshTokenExpirationMinutes));
             string refreshToken = _jwtUtils.GenerateRefreshToken();
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(_jwtConfig.RefreshTokenExpirationMinutes);
+            user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(_authConfig.RefreshTokenExpirationMinutes);
 
             await _userManager.UpdateAsync(user);
 
@@ -223,7 +231,7 @@ namespace WestCoastEducation.EndPoints
 
         private static async Task<string> IssueAccessToken(ApplicationUser user)
         {
-            var validUntil = DateTime.UtcNow.Add(TimeSpan.FromMinutes(_jwtConfig.AccessTokenExpirationMinutes));
+            var validUntil = DateTime.UtcNow.Add(TimeSpan.FromMinutes(_authConfig.AccessTokenExpirationMinutes));
 
             var userRoles = await _userManager.GetRolesAsync(user);
 
@@ -244,6 +252,20 @@ namespace WestCoastEducation.EndPoints
             var accessToken = _jwtUtils.GenerateToken(authClaims, validUntil);
 
             return accessToken;
+        }
+
+
+        private static async Task<ClaimsPrincipal> IssueCookie(ApplicationUser user)
+        {
+            var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+            var roles = await _userManager.GetRolesAsync(user);
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            foreach (var role in roles)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, role));
+            }
+
+            return new ClaimsPrincipal(identity);
         }
     }
 }

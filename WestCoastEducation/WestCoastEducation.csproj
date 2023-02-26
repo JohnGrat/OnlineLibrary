@@ -13,7 +13,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="firestore.Development.json" />
-    <EmbeddedResource Include="firestore.json" />
+    <EmbeddedResource Include="firestore.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

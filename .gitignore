@@ -376,3 +376,4 @@ WestCoastEducation/Properties/launchSettings.json
 .gitignore
 WestCoastEducation/firestore.Development.json
 WestCoastEducation/ClientApp/.env.development
+WestCoastEducation/Properties/ServiceDependencies/FullstackApp-WCE-JG - Zip Deploy3/profile.arm.json

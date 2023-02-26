@@ -7,6 +7,7 @@ using DataAccess.Data;
 using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 using WestCoastEducation.Auth;
 using WestCoastEducation.Config;
@@ -19,11 +20,9 @@ using WestCoastEducation.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
-string firestoreJson = File.ReadAllText($"firestore.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? ""}.json");
-
 //Add JwtConfig
-JwtConfig jwtConfig = configuration.GetSection(nameof(JwtConfig)).Get<JwtConfig>();
-builder.Services.AddSingleton(jwtConfig);
+AuthConfig authConfig = configuration.GetSection(nameof(AuthConfig)).Get<AuthConfig>();
+builder.Services.AddSingleton(authConfig);
 
 //AutoMapper
 var config = new MapperConfiguration(cfg =>
@@ -34,8 +33,8 @@ var mapper = config.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
 // For Entity Framework
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityDatabase")));
-builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration.GetConnectionString("BookstoreDatabase")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString(ConstantsConfig.IdentityDatabase)));
+builder.Services.AddDbContext<BookstoreContext>(options => options.UseSqlServer(configuration.GetConnectionString(ConstantsConfig.BookstoreDatabase)));
 
 //Swagger configuration in case of dev mode
 builder.Services.AddSwaggerConfiguration(configuration);
@@ -60,13 +59,18 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 // Adding Authentication
-builder.Services.AddJwtAuthentication(jwtConfig);
+builder.Services.AddJwtAuthentication(authConfig);
+builder.Services.AddCookieAuthentication(authConfig);
 builder.Services.AddAuthorization();
 
+
 //Add Firestore
+string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+string fileName = environment == "Development" ? "firestore.Development.json" : "firestore.json";
+string firestoreJson = File.ReadAllText(fileName);
 var fireStore = new FirestoreDbBuilder
 {
-    ProjectId = configuration["Firestore:ProjectId"],
+    ProjectId = configuration.GetValue<string>(ConstantsConfig.FirestoreProjectId),
     JsonCredentials = firestoreJson
 }.Build();
 builder.Services.AddSingleton(fireStore);

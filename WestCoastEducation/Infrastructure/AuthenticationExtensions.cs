@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WestCoastEducation.Config;
@@ -7,7 +8,7 @@ namespace WestCoastEducation.Infrastructure
 {
     public static class AuthenticationExtensions
     {
-        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtConfig jwtConfig)
+        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, AuthConfig authConfig)
         {
             // Adding Authentication
             services.AddAuthentication(options =>
@@ -21,9 +22,9 @@ namespace WestCoastEducation.Infrastructure
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidAudience = jwtConfig.Audience,
-                    ValidIssuer = jwtConfig.Issuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.Secret)),
+                    ValidAudience = authConfig.Audience,
+                    ValidIssuer = authConfig.Issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authConfig.Secret)),
                     ClockSkew = TimeSpan.FromSeconds(1),
                     RequireExpirationTime = true,
                     ValidateLifetime = true,
@@ -46,6 +47,27 @@ namespace WestCoastEducation.Infrastructure
                         return Task.CompletedTask;
                     }
                 };
+            });
+
+            return services;
+        }
+
+
+        public static IServiceCollection AddCookieAuthentication(this IServiceCollection services, AuthConfig authConfig)
+        {
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.Cookie.Name = "WCE-Token";
+                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(authConfig.CookieTokenExpirationMinutes);
             });
 
             return services;
