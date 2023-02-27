@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using WestCoastEducation.Auth;
@@ -29,17 +30,17 @@ namespace WestCoastEducation.EndPoints
 
         public static WebApplication MapAuthEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/auth/register-admin", RegisterAdmin);
-            app.MapPost("/api/auth/revoke-all", RevokeAll);
-            app.MapPost("/api/auth/revoke/{username}", Revoke);
+            app.MapPost("/api/auth/register-admin", RegisterAdmin).RequireAuthorization(UserRoles.Admin);
+            app.MapPost("/api/auth/revoke-all", RevokeAll).RequireAuthorization(UserRoles.Admin);
+            app.MapPost("/api/auth/revoke/{username}", Revoke).RequireAuthorization(UserRoles.Admin);
             app.MapPost("/api/auth/refresh-token", RefreshToken);
+            app.MapGet("/api/auth/logout", (HttpRequest request) => Logout(request)).RequireAuthorization();
             app.MapGet("/api/auth/googleexternallogin", (HttpRequest request) => GoogleExternalLogin(request));
             app.MapGet("/api/auth/login", (HttpRequest request) => Login(request));
-            app.MapGet("/api/auth/me", (HttpRequest request) => GetCurrentUser(request));
+            app.MapGet("/api/auth/me", (HttpRequest request) => GetCurrentUser(request)).RequireAuthorization();
             return app;
         }
 
-        [Authorize(Roles = UserRoles.Admin)]
         private static async Task<IResult> RegisterAdmin(RegisterModel model)
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
@@ -67,6 +68,16 @@ namespace WestCoastEducation.EndPoints
             }
 
             return Results.Ok("User Created");
+        }
+
+        private static async Task<IResult> Logout(HttpRequest request)
+        {
+            var prop = new AuthenticationProperties()
+            {
+                RedirectUri = "/"
+            };
+            await request.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, prop);
+            return Results.Ok();
         }
 
         private static async Task<IResult> GoogleExternalLogin(HttpRequest request)
@@ -180,7 +191,6 @@ namespace WestCoastEducation.EndPoints
             });
         }
 
-        [Authorize(Roles = UserRoles.Admin)]
         private static async Task<IResult> Revoke(string username)
         {
             var user = await _userManager.FindByNameAsync(username);
@@ -191,7 +201,6 @@ namespace WestCoastEducation.EndPoints
             return Results.Ok();
         }
 
-        [Authorize(Roles = UserRoles.Admin)]
         private static async Task<IResult> RevokeAll()
         {
             var users = _userManager.Users.ToList();
@@ -203,7 +212,6 @@ namespace WestCoastEducation.EndPoints
             return Results.Ok();
         }
 
-        [Authorize]
         private static async Task<IResult> GetCurrentUser(HttpRequest request)
         {
             var user = await _userManager.FindByIdAsync(request.HttpContext.User.Claims

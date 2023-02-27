@@ -26,13 +26,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
         withCredentials: true,
       });
-
       setUser(res.data);
     }
   }
 
-  function logout() {
-    setUser(null);
+  async function logout() {
+    try {
+      await axios.get(`${baseUrl}/auth/logout`, {
+        headers: {
+          ...axiosDefaultHeaders,
+        },
+        withCredentials: true,
+      });
+      setUser(null);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   function setUserStorage(user: User | null) {

@@ -40,13 +40,11 @@ const PRIMARY_COL_HEIGHT = 300;
 
 export const bookDetail = (props: any) => {
   const [book, setbook] = useState<BookModel>();
-  const [loading, setLoading] = useState(false);
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(
-    null
-  );
+  const { comments, loadingComment, addComment } =
+  useSignalRConnection(props.match.params.id);
   const [visible, setVisible] = useState(true);
-  const [comments, setComments] = useState<Array<CommentDto>>([]);
   const { user }: Partial<{ user: User }> = useContext(AuthContext);
+  const theme = useMantineTheme();
 
   let api = useAxios();
 
@@ -60,65 +58,6 @@ export const bookDetail = (props: any) => {
       body: hasLength({ min: 3 }, "comment must be atleast 3 charathers"),
     },
   });
-
-  async function addComment(comment: CreateCommentDto) {
-    try {
-      await connection?.invoke("NewCommentAdded", comment);
-      form.reset();
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function getInitialComments() {
-    try {
-      const initialComments = await connection?.invoke(
-        "GetCommentsForBook",
-        props.match.params.id
-      );
-      setComments(initialComments);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  useEffect(() => {
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${baseUrl}/hubs/commenthub`, {
-        accessTokenFactory: () => sessionStorage.access_token,
-      })
-      .build();
-
-    setConnection(newConnection);
-  }, []);
-
-  useEffect(() => {
-    if (connection) {
-      connection.start().then(() => {
-        getInitialComments();
-        connection.invoke("SubscribeToComments", props.match.params.id);
-      });
-
-      connection.on("CommentAdded", (comment: CommentDto) => {
-        setLoading(true);
-
-        setComments((prevComments) => [...prevComments, comment]);
-        setTimeout(() => {
-          setLoading(false);
-        }, 500);
-      });
-
-      return () => {
-        connection.invoke("UnsubscribeFromComments", props.match.params.id);
-        connection.stop();
-      };
-    }
-  }, [connection]);
-
-  const theme = useMantineTheme();
-
-  const secondaryColor =
-    theme.colorScheme === "dark" ? theme.colors.dark[1] : theme.colors.gray[7];
 
   const load = async () => {
     const response = await api.get<BookModel>(`/book/${props.match.params.id}`);
@@ -174,16 +113,16 @@ export const bookDetail = (props: any) => {
       </Card.Section>
 
       <Card.Section p="xl">
-        <div hidden={!loading}>
-          <Skeleton height={50} circle mb="xl" visible={loading} />
-          <Skeleton height={8} radius="xl" visible={loading} />
-          <Skeleton height={8} mt={6} radius="xl" visible={loading} />
+        <div hidden={!loadingComment}>
+          <Skeleton height={50} circle mb="xl" visible={loadingComment} />
+          <Skeleton height={8} radius="xl" visible={loadingComment} />
+          <Skeleton height={8} mt={6} radius="xl" visible={loadingComment} />
           <Skeleton
             height={8}
             mt={6}
             width="70%"
             radius="xl"
-            visible={loading}
+            visible={loadingComment}
           />
         </div>
 
@@ -192,7 +131,7 @@ export const bookDetail = (props: any) => {
           .map((comment) => (
             <CommentHtml
               key={comment.id}
-              postedAt={new Date().toDateString()}
+              postedAt={new Date(comment.postedAt).toDateString()}
               body={comment.body}
               author={comment.author}
             />
@@ -200,4 +139,76 @@ export const bookDetail = (props: any) => {
       </Card.Section>
     </Card>
   );
+};
+
+
+export const useSignalRConnection = (bookId: string) => {
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(
+    null
+  );
+  const [comments, setComments] = useState<CommentDto[]>([]);
+  const [loadingComment, setLoadingComment] = useState(false);
+
+  useEffect(() => {
+    const newConnection = new signalR.HubConnectionBuilder()
+      .withUrl(`${baseUrl}/hubs/commenthub`)
+      .build();
+    setConnection(newConnection);
+  }, []);
+
+  useEffect(() => {
+    if (connection) {
+      connection
+        .start()
+        .then(() => {
+          console.log("SignalR connection established");
+          getInitialComments(bookId);
+          connection.invoke("SubscribeToComments", bookId);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+      connection.on("CommentAdded", (comment: CommentDto) => {
+        setLoadingComment(true)
+
+        setTimeout(() => {
+          setComments((prevComments) => [...prevComments, comment]);
+          setLoadingComment(false)
+        }, 500);    
+      });
+
+      return () => {
+        connection.invoke("UnsubscribeFromComments", bookId);
+        connection.stop();
+        console.log("SignalR connection stopped");
+      };
+    }
+  }, [connection]);
+
+  const getInitialComments = async (bookId: string) => {
+    try {
+      const initialComments = await connection?.invoke(
+        "GetCommentsForBook",
+        bookId
+      );
+      setComments(initialComments || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const addComment = async (comment: CreateCommentDto) => {
+    try {
+      await connection?.invoke("NewCommentAdded", comment);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return {
+    comments,
+    loadingComment,
+    addComment,
+  };
 };

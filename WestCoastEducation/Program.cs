@@ -5,9 +5,9 @@ using Business.Repositories;
 using Business.Repositories.Default;
 using DataAccess.Data;
 using Google.Cloud.Firestore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 using WestCoastEducation.Auth;
 using WestCoastEducation.Config;
@@ -42,6 +42,9 @@ builder.Services.AddSwaggerConfiguration(configuration);
 //Lowercase urls
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
+//Memory Caching
+builder.Services.AddMemoryCache();
+
 //Dependency Inject Services
 builder.Services.AddScoped<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IRepository<BookDto, BookBriefDto>, BookRepository>();
@@ -61,8 +64,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // Adding Authentication
 builder.Services.AddJwtAuthentication(authConfig);
 builder.Services.AddCookieAuthentication(authConfig);
-builder.Services.AddAuthorization();
-
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(UserRoles.Admin, policy => policy.RequireRole(UserRoles.Admin));
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+           .RequireAuthenticatedUser()
+           .Build();
+});
 
 //Add Firestore
 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
