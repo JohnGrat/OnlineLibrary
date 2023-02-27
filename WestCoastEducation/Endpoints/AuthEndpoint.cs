@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
+using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using WestCoastEducation.Auth;
@@ -30,14 +31,14 @@ namespace WestCoastEducation.EndPoints
 
         public static WebApplication MapAuthEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/auth/register-admin", RegisterAdmin).RequireAuthorization(UserRoles.Admin);
-            app.MapPost("/api/auth/revoke-all", RevokeAll).RequireAuthorization(UserRoles.Admin);
-            app.MapPost("/api/auth/revoke/{username}", Revoke).RequireAuthorization(UserRoles.Admin);
-            app.MapPost("/api/auth/refresh-token", RefreshToken);
-            app.MapGet("/api/auth/logout", (HttpRequest request) => Logout(request)).RequireAuthorization();
-            app.MapGet("/api/auth/googleexternallogin", (HttpRequest request) => GoogleExternalLogin(request));
-            app.MapGet("/api/auth/login", (HttpRequest request) => Login(request));
-            app.MapGet("/api/auth/me", (HttpRequest request) => GetCurrentUser(request)).RequireAuthorization();
+            app.MapPost("/api/auth/register-admin", RegisterAdmin).RequireAuthorization(UserRoles.Admin).WithTags("Authentication");
+            app.MapPost("/api/auth/revoke-all", RevokeAll).RequireAuthorization(UserRoles.Admin).WithTags("Authentication");
+            app.MapPost("/api/auth/revoke/{username}", Revoke).RequireAuthorization(UserRoles.Admin).WithTags("Authentication");
+            app.MapPost("/api/auth/refresh-token", RefreshToken).WithTags("Authentication");
+            app.MapGet("/api/auth/logout", (HttpRequest request) => WebLogout(request)).RequireAuthorization().WithTags("Authentication");
+            app.MapGet("/api/auth/googleexternallogin", (HttpRequest request) => GoogleExternalLogin(request)).WithTags("Authentication");
+            app.MapGet("/api/auth/login", (HttpRequest request) => Login(request)).WithTags("Authentication");
+            app.MapGet("/api/auth/me", (HttpRequest request) => GetCurrentUser(request)).RequireAuthorization().WithTags("Authentication");
             return app;
         }
 
@@ -70,13 +71,9 @@ namespace WestCoastEducation.EndPoints
             return Results.Ok("User Created");
         }
 
-        private static async Task<IResult> Logout(HttpRequest request)
+        private static async Task<IResult> WebLogout(HttpRequest request)
         {
-            var prop = new AuthenticationProperties()
-            {
-                RedirectUri = "/"
-            };
-            await request.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, prop);
+            await request.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Results.Ok();
         }
 

@@ -15,8 +15,8 @@ namespace WestCoastEducation.Endpoints
 
         public static WebApplication MapBookEndpoints(this WebApplication app)
         {
-            app.MapGet("/api/book", GetAllBooks);
-            app.MapGet("/api/book/{id}", GetOneBook);
+            app.MapGet("/api/book", GetAllBooks).WithTags("Books");
+            app.MapGet("/api/book/{id}", GetOneBook).WithTags("Books");
             return app;
         }
 

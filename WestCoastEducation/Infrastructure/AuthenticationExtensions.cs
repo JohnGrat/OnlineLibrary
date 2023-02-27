@@ -68,6 +68,7 @@ namespace WestCoastEducation.Infrastructure
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.SlidingExpiration = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(authConfig.CookieTokenExpirationMinutes);
+                options.LogoutPath = "/";
             });
 
             return services;
