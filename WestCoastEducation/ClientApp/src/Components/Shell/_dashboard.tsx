@@ -69,6 +69,7 @@ function dashboard(props: any) {
           hiddenBreakpoint="sm"
           hidden={!opened}
           width={{ sm: 200, lg: 300 }}
+          onClick={() => setOpened((o) => !o)}
         >
           <MainLinks />
         </Navbar>
