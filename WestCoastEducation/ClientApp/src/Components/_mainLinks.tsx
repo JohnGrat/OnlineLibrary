@@ -3,6 +3,7 @@ import {
   IconAlertCircle,
   IconUsers,
   IconAddressBook,
+  IconBrandGithub,
 } from "@tabler/icons-react";
 import { ThemeIcon, UnstyledButton, Group, Text } from "@mantine/core";
 import { Link } from "react-router-guard";
@@ -63,9 +64,16 @@ const data = [
   {
     role: "Admin",
     icon: <IconUsers size={16} />,
-    color: "pink",
+    color: "yellow",
     label: "Users",
     path: "/users",
+  },
+  {
+    role: null,
+    icon: <IconBrandGithub size={16} />,
+    color: "pink",
+    label: "Github",
+    path: "/github",
   },
 ];
 

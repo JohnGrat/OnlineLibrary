@@ -3,6 +3,7 @@ import { bookList } from "./Pages/_bookList";
 import { bookDetail } from "./Pages/_bookDetail";
 import { checkAdmin } from "./Guards/checkAdmin";
 import { userList } from "./Pages/_usersList";
+import { github } from "./Pages/_github";
 
 export interface Props {
   children: React.ReactNode;
@@ -29,6 +30,11 @@ export default [
         path: "/users",
         canActivate: [checkAdmin],
         component: userList,
+      },
+      {
+        path: "/github",
+        exact: true,
+        component: github,
       },
     ],
   },
