@@ -80,6 +80,7 @@ export const bookList = (props: Props) => {
               accessor: "publicationDate",
               render: ({ publicationDate }) =>
                 dayjs(publicationDate).format("YYYY"),
+              visibleMediaQuery: (theme) => `(min-width: ${theme.breakpoints.md}px)`,
             },
             {
               accessor: "actions",
