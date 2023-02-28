@@ -1,9 +1,11 @@
-import { useContext, useEffect } from "react";
+import { LoadingOverlay, MediaQuery } from "@mantine/core";
+import { useContext, useEffect, useState } from "react";
 import AuthContext from "../Providers/auth.provider";
 declare var google: any;
 
 export function SignInButton() {
   const { login }: any = useContext(AuthContext);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
@@ -13,10 +15,17 @@ export function SignInButton() {
         callback: login,
       });
 
-      google.accounts.id.renderButton(document.getElementById("loginDiv"), {
+      google.accounts.id.renderButton(document.getElementById("login"), {
         theme: "filled_black",
         text: "signin_with",
-        shape: "pill",
+        shape: "rectangular",
+      });
+
+      google.accounts.id.renderButton(document.getElementById("loginSmall"), {
+        theme: "filled_black",
+        text: "signin_with",
+        shape: "rectangular",
+        type: "icon",
       });
     };
 
@@ -24,7 +33,12 @@ export function SignInButton() {
   }, [login]);
   return (
     <>
-      <div id="loginDiv"></div>
+      <MediaQuery largerThan="sm" styles={{ display: "none" }}>
+        <div id="loginSmall"></div>
+      </MediaQuery>
+      <MediaQuery smallerThan="sm" styles={{ display: "none" }}>
+        <div id="login"></div>
+      </MediaQuery>      
     </>
   );
 }

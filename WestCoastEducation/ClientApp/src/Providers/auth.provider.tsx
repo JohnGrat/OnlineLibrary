@@ -38,9 +38,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
         withCredentials: true,
       });
-      setUser(null);
     } catch (error) {
       console.log(error);
+    } finally {
+      setUser(null);
     }
   }
 
@@ -53,11 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    if (user) {
-      setUserStorage(user);
-    } else {
-      setUserStorage(null);
-    }
+    setUserStorage(user);
   }, [user]);
 
   let contextData = {
