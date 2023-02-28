@@ -30,9 +30,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  async function logout() {
+  function logout() {
     try {
-      await axios.get(`${baseUrl}/auth/logout`, {
+      axios.get(`${baseUrl}/auth/logout`, {
         headers: {
           ...axiosDefaultHeaders,
         },

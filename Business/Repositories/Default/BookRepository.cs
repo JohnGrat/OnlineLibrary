@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Business.Dtos.Books;
+using Business.Dtos.Comments;
 using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Business.Repositories.Default
 {
@@ -9,11 +11,14 @@ namespace Business.Repositories.Default
     {
         private readonly BookstoreContext _context;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _memoryCache;
+        private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(10);
 
-        public BookRepository(BookstoreContext context, IMapper mapper)
+        public BookRepository(BookstoreContext context, IMapper mapper, IMemoryCache memoryCache)
         {
             _context = context;
             _mapper = mapper;
+            _memoryCache = memoryCache;
         }
 
         public Task<BookDto> AddAsync(BookDto entity)
@@ -28,6 +33,11 @@ namespace Business.Repositories.Default
 
         public async Task<IEnumerable<BookBriefDto>> GetAllAsync(string sort, string filter, int? page, int? pageSize)
         {
+            var cacheKey = $"{nameof(BookRepository)}_{filter}_{page}_{pageSize}";
+            if (_memoryCache.TryGetValue(cacheKey, out IEnumerable<BookBriefDto> cachedbooksDto))
+            {
+                return cachedbooksDto;
+            }
             var query = _context.Books
                 .Include(b => b.Language)
                 .Include(b => b.Authors)
@@ -67,6 +77,7 @@ namespace Business.Repositories.Default
             var books = await query.ToListAsync();
 
             var booksDto = _mapper.Map<List<BookBriefDto>>(books);
+            _memoryCache.Set(cacheKey, booksDto, _cacheDuration);
 
             return booksDto;
         }

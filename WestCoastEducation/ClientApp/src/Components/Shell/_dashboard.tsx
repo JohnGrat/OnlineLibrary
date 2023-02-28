@@ -12,6 +12,7 @@ import {
   Menu,
   Burger,
   Breadcrumbs,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { Brand } from "../_brand";
 import { UserButton } from "../_user";
@@ -45,6 +46,7 @@ interface Props {
 
 function dashboard(props: any) {
   const { children, history, location, guardData }: any = props;
+  const { colorScheme } = useMantineColorScheme();
   const { user, logout }: Partial<{ user: User; logout: () => void }> =
     useContext(AuthContext);
   const [opened, setOpened] = useState(false);
@@ -147,7 +149,7 @@ function dashboard(props: any) {
                   </Menu>
                 ) || <div style={{ width: 214 }}></div>
               ) : (
-                <SignInButton />
+                <SignInButton colorScheme={colorScheme} />
               )}
             </Group>
           </div>

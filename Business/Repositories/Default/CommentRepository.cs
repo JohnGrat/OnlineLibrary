@@ -7,28 +7,18 @@ namespace Business.Repositories.Default;
 public class CommentRepository : IRepository<CommentDto, CommentBriefDto>
 {
     private readonly CollectionReference _commentCollection;
-    private readonly IMemoryCache _memoryCache;
-    private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(10);
 
-    public CommentRepository(FirestoreDb context, IMemoryCache memoryCache)
+    public CommentRepository(FirestoreDb context)
     {
         _commentCollection = context.Collection("comments");
-        _memoryCache = memoryCache;
     }
 
     public async Task<IEnumerable<CommentBriefDto>> GetAllAsync(string? sort, string? filter, int? page, int? pageSize)
     {
-        var cacheKey = $"{nameof(CommentRepository)}_{filter}_{page}_{pageSize}";
-        if (_memoryCache.TryGetValue(cacheKey, out IEnumerable<CommentBriefDto> cachedComments))
-        {
-            return cachedComments;
-        }
         // Create a query with the specified filter
         var data = await _commentCollection.GetSnapshotAsync();
         var comments = data.Documents.Select(doc => doc.ConvertTo<CommentBriefDto>());
         var bookComments = comments.Where(r => r.BookId == filter);
-        _memoryCache.Set(cacheKey, bookComments, _cacheDuration);
-
         return bookComments;
     }
 

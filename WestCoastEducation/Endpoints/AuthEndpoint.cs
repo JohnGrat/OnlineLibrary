@@ -87,37 +87,33 @@ namespace WestCoastEducation.EndPoints
                 return Results.BadRequest("Unauthorize");
             }
 
-            var info = new UserLoginInfo("Google", payload.Subject, "Google");
-            var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+            var user = await _userManager.FindByEmailAsync(payload.Email);
             if (user == null)
             {
+                ApplicationUser newUser = new()
+                {
+                    DisplayName = payload.Name,
+                    Picture = payload.Picture,
+                    Email = payload.Email,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    UserName = Guid.NewGuid().ToString()
+                };
+                var resultCreate = await _userManager.CreateAsync(newUser);
+
+                if (await _roleManager.RoleExistsAsync(UserRoles.User))
+                {
+                    await _userManager.AddToRoleAsync(newUser, UserRoles.User);
+                }
+
+                if (!resultCreate.Succeeded)
+                {
+                    return Results.BadRequest("Unauthorize");
+                }
+
                 user = await _userManager.FindByEmailAsync(payload.Email);
                 if (user == null)
                 {
-                    ApplicationUser newUser = new()
-                    {
-                        DisplayName = payload.Name,
-                        Picture = payload.Picture,
-                        Email = payload.Email,
-                        SecurityStamp = Guid.NewGuid().ToString(),
-                        UserName = Guid.NewGuid().ToString()
-                    };
-                    var resultCreate = await _userManager.CreateAsync(newUser);
-
-                    if (await _roleManager.RoleExistsAsync(UserRoles.User))
-                    {
-                        await _userManager.AddToRoleAsync(newUser, UserRoles.User);
-                    }
-
-                    if (!resultCreate.Succeeded)
-                    {
-                        return Results.BadRequest("Unauthorize");
-                    }
-                }
-                var resultLOgin = await _userManager.AddLoginAsync(user, info);
-                if (!resultLOgin.Succeeded)
-                {
-                    return Results.BadRequest("Unauthorize");
+                    return Results.BadRequest("Error creating account");
                 }
             }
 

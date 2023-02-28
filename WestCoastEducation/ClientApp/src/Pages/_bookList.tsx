@@ -26,7 +26,6 @@ export const bookList = (props: Props) => {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebouncedValue(query, 1000);
   let api = useAxios();
-  const { height, width } = useViewportSize();
 
   const load = async () => {
     setFetching(true);
@@ -103,7 +102,6 @@ export const bookList = (props: Props) => {
           recordsPerPage={PAGE_SIZE}
           page={page}
           onPageChange={(p) => setPage(p)}
-          minHeight={height * 0.6}
         />
       </Box>
     </>
