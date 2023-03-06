@@ -1,4 +1,4 @@
-import React, { createContext } from "react";
+import React, { createContext, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { NotificationsProvider } from "@mantine/notifications";
 import {
@@ -10,6 +10,11 @@ import { useLocalStorage } from "@mantine/hooks";
 import { AuthProvider } from "./Providers/auth.provider";
 import config from "./config";
 import { RouterGuard } from "react-router-guard";
+import { SignalRApi } from "./Apis/signalr.service";
+
+export const baseUrl = import.meta.env.DEV
+  ? import.meta.env.VITE_BASE_URL
+  : "/api";
 
 export const App: React.FC = () => {
   const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
@@ -26,16 +31,10 @@ export const App: React.FC = () => {
         colorScheme={colorScheme}
         toggleColorScheme={toggleColorScheme}
       >
-        <NotificationsProvider>
-          <AuthProvider>
-            <RouterGuard config={config} />
-          </AuthProvider>
-        </NotificationsProvider>
+        <AuthProvider>
+          <RouterGuard config={config} />
+        </AuthProvider>
       </ColorSchemeProvider>
     </MantineProvider>
   );
 };
-
-export const baseUrl = import.meta.env.DEV
-  ? import.meta.env.VITE_BASE_URL
-  : "/api";

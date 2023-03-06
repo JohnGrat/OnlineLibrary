@@ -45,17 +45,17 @@ export const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
       <MediaQuery smallerThan="sm" styles={{ display: "none" }}>
         <Group>
           <Avatar src={image} radius="xl" />
-            <div style={{ flex: 1 }}>
-              <Text size="sm" weight={500}>
-                {name}
-              </Text>
-              <Text color="dimmed" size="xs">
-                {role}
-              </Text>
-            </div>
+          <div style={{ flex: 1 }}>
+            <Text size="sm" weight={500}>
+              {name}
+            </Text>
+            <Text color="dimmed" size="xs">
+              {role}
+            </Text>
+          </div>
           {icon || <IconChevronRight size={16} />}
         </Group>
-      </MediaQuery>      
+      </MediaQuery>
     </UnstyledButton>
   )
 );

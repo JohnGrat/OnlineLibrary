@@ -8,7 +8,7 @@ import { Link } from "react-router-guard";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Props } from "../config";
-import useAxios from "../Hooks/useAxios";
+import { BookApi } from "../Apis/book.service";
 
 dayjs.extend(relativeTime);
 
@@ -25,14 +25,11 @@ export const bookList = (props: Props) => {
   const [fetching, setFetching] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebouncedValue(query, 1000);
-  let api = useAxios();
 
   const load = async () => {
     setFetching(true);
-    const response = await api.get<BookBriefModel[]>(`/book`, {
-      params: { filter: query },
-    });
-    setRecords(response.data);
+    const response = await BookApi.GetAllBooks(query, 1, 100);
+    setRecords(response);
     setPage(1);
     setFetching(false);
   };
@@ -79,7 +76,8 @@ export const bookList = (props: Props) => {
               accessor: "publicationDate",
               render: ({ publicationDate }) =>
                 dayjs(publicationDate).format("YYYY"),
-              visibleMediaQuery: (theme) => `(min-width: ${theme.breakpoints.md}px)`,
+              visibleMediaQuery: (theme) =>
+                `(min-width: ${theme.breakpoints.md}px)`,
             },
             {
               accessor: "actions",

@@ -15,38 +15,23 @@ import { BookModel } from "../Models/book";
 import * as signalR from "@microsoft/signalr";
 import { hasLength, useForm } from "@mantine/form";
 import { CommentHtml } from "../Components/_comment";
-import useAxios from "../Hooks/useAxios";
 import { User } from "../Models/user";
 import AuthContext from "../Providers/auth.provider";
 import { baseUrl } from "../App";
-
-interface CommentDto {
-  id: number;
-  bookId: string;
-  postedAt: Date;
-  body: string;
-  author: {
-    name: string;
-    image: string;
-  };
-}
-
-interface CreateCommentDto {
-  bookId: string;
-  body: string;
-}
+import { BookApi } from "../Apis/book.service";
+import { SignalRApi } from "../Apis/signalr.service";
+import { CommentDto, CreateCommentDto } from "../Models/comment";
 
 const PRIMARY_COL_HEIGHT = 300;
 
 export const bookDetail = (props: any) => {
   const [book, setbook] = useState<BookModel>();
-  const { comments, loadingComment, addComment } =
-  useSignalRConnection(props.match.params.id);
   const [visible, setVisible] = useState(true);
+  const { comments, loadingComment, addComment } = useSignalRConnection(
+    props.match.params.id
+  );
   const { user }: Partial<{ user: User }> = useContext(AuthContext);
   const theme = useMantineTheme();
-
-  let api = useAxios();
 
   const form = useForm({
     initialValues: {
@@ -60,14 +45,15 @@ export const bookDetail = (props: any) => {
   });
 
   const load = async () => {
-    const response = await api.get<BookModel>(`/book/${props.match.params.id}`);
-    setbook(response.data);
+    const response = await BookApi.GetOneBook(props.match.params.id);
+    setbook(response);
     setVisible(false);
   };
 
   useEffect(() => {
     load();
   }, []);
+
   const SECONDARY_COL_HEIGHT = PRIMARY_COL_HEIGHT / 2 - theme.spacing.md / 2;
 
   return (
@@ -141,66 +127,40 @@ export const bookDetail = (props: any) => {
   );
 };
 
-
 export const useSignalRConnection = (bookId: string) => {
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(
-    null
-  );
   const [comments, setComments] = useState<CommentDto[]>([]);
-  const [loadingComment, setLoadingComment] = useState(false);
-
-  useEffect(() => {
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${baseUrl}/hubs/commenthub`)
-      .build();
-    setConnection(newConnection);
-  }, []);
-
-  useEffect(() => {
-    if (connection) {
-      connection
-        .start()
-        .then(() => {
-          console.log("SignalR connection established");
-          getInitialComments(bookId);
-          connection.invoke("SubscribeToComments", bookId);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-
-      connection.on("CommentAdded", (comment: CommentDto) => {
-        setLoadingComment(true)
-
-        setTimeout(() => {
-          setComments((prevComments) => [...prevComments, comment]);
-          setLoadingComment(false)
-        }, 500);    
-      });
-
-      return () => {
-        connection.invoke("UnsubscribeFromComments", bookId);
-        connection.stop();
-        console.log("SignalR connection stopped");
-      };
-    }
-  }, [connection]);
+  const [loadingComment, setLoadingComment] = useState(true);
 
   const getInitialComments = async (bookId: string) => {
     try {
-      const initialComments = await connection?.invoke(
-        "GetCommentsForBook",
-        bookId
-      );
-      setComments(initialComments || []);
+      const initialComments = await SignalRApi.getCommentsForBook(bookId);
+      setComments(initialComments);
+      setLoadingComment(false);
     } catch (err) {
       console.error(err);
     }
   };
 
+  const handleNewComment = (comment: CommentDto) => {
+    setLoadingComment(true);
+    setTimeout(() => {
+      setComments((prevComments) => [...prevComments, comment]);
+      setLoadingComment(false);
+    }, 500);
+  };
+
+  useEffect(() => {
+    getInitialComments(bookId);
+    SignalRApi.onCommentAdded(handleNewComment);
+    SignalRApi.subscribeToComments(bookId);
+    return () => {
+      SignalRApi.unsubscribeFromComments(bookId);
+    };
+  }, []);
+
   const addComment = async (comment: CreateCommentDto) => {
     try {
-      await connection?.invoke("NewCommentAdded", comment);
+      await SignalRApi.newCommentAdded(comment);
     } catch (err) {
       console.error(err);
     }

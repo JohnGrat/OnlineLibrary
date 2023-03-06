@@ -1,8 +1,8 @@
 import React, { createContext, ReactNode, useEffect, useState } from "react";
 import { User } from "../Models/user";
 import axios from "axios";
-import { axiosDefaultHeaders } from "../Hooks/useAxios";
 import { baseUrl } from "../App";
+import { authApi } from "../Apis/auth.service";
 
 const AuthContext = createContext({});
 export default AuthContext;
@@ -11,33 +11,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState(getUserStorage());
 
   async function login(response: any) {
-    const url = `${baseUrl}/auth/googleexternallogin`;
-    const res: any = await axios.get(url, {
-      headers: {
-        ...axiosDefaultHeaders,
-        Authorization: `Bearer ${response.credential}`,
-      },
-      withCredentials: true,
-    });
+    const res = await authApi.loginAsync(`Bearer ${response.credential}`);
     if (res.status === 200) {
-      const res = await axios.get(`${baseUrl}/auth/me`, {
-        headers: {
-          ...axiosDefaultHeaders,
-        },
-        withCredentials: true,
-      });
-      setUser(res.data);
+      const user = await authApi.getLoggedInUser();
+      setUser(user);
     }
   }
 
   function logout() {
     try {
-      axios.get(`${baseUrl}/auth/logout`, {
-        headers: {
-          ...axiosDefaultHeaders,
-        },
-        withCredentials: true,
-      });
+      authApi.webLogoutAsync();
     } catch (error) {
       console.log(error);
     } finally {
@@ -59,7 +42,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   let contextData = {
     user: user,
-    setUser: setUser,
     login: login,
     logout: logout,
   };

@@ -1,17 +1,18 @@
-import { createStyles, Container, Text, Button, Group } from '@mantine/core';
-import { IconBrandGithub } from '@tabler/icons-react';
+import { createStyles, Container, Text, Button, Group } from "@mantine/core";
+import { IconBrandGithub } from "@tabler/icons-react";
 
-const BREAKPOINT = '@media (max-width: 755px)';
+const BREAKPOINT = "@media (max-width: 755px)";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
-    position: 'relative',
-    boxSizing: 'border-box',
-    backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : "#F8F9FA",
+    position: "relative",
+    boxSizing: "border-box",
+    backgroundColor:
+      theme.colorScheme === "dark" ? theme.colors.dark[8] : "#F8F9FA",
   },
 
   inner: {
-    position: 'relative',
+    position: "relative",
     paddingTop: 200,
     paddingBottom: 120,
 
@@ -28,7 +29,7 @@ const useStyles = createStyles((theme) => ({
     lineHeight: 1.1,
     margin: 0,
     padding: 0,
-    color: theme.colorScheme === 'dark' ? theme.white : theme.black,
+    color: theme.colorScheme === "dark" ? theme.white : theme.black,
 
     [BREAKPOINT]: {
       fontSize: 42,
@@ -74,18 +75,23 @@ export function github() {
     <div className={classes.wrapper}>
       <Container size={700} className={classes.inner}>
         <h1 className={classes.title}>
-        Check out my{' '}
-          <Text component="span" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }} inherit>
-          GitHub
-          </Text>{' '}
+          Check out my{" "}
+          <Text
+            component="span"
+            variant="gradient"
+            gradient={{ from: "blue", to: "cyan" }}
+            inherit
+          >
+            GitHub
+          </Text>{" "}
         </h1>
 
         <Text className={classes.description} color="dimmed">
-        This is a full-stack project that implements a library application using ASP.NET Core and React.
+          This is a full-stack project that implements a library application
+          using ASP.NET Core and React.
         </Text>
 
         <Group className={classes.controls}>
-
           <Button
             component="a"
             href="https://github.com/JohnGrat/WestCoastEducation"
