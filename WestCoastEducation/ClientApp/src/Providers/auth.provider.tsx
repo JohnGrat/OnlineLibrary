@@ -1,7 +1,5 @@
-import React, { createContext, ReactNode, useEffect, useState } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 import { User } from "../Models/user";
-import axios from "axios";
-import { baseUrl } from "../App";
 import { authApi } from "../Apis/auth.service";
 
 const AuthContext = createContext({});

@@ -12,12 +12,10 @@ import {
 import dayjs from "dayjs";
 import { useContext, useEffect, useState } from "react";
 import { BookModel } from "../Models/book";
-import * as signalR from "@microsoft/signalr";
 import { hasLength, useForm } from "@mantine/form";
 import { CommentHtml } from "../Components/_comment";
 import { User } from "../Models/user";
 import AuthContext from "../Providers/auth.provider";
-import { baseUrl } from "../App";
 import { BookApi } from "../Apis/book.service";
 import { SignalRApi } from "../Apis/signalr.service";
 import { CommentDto, CreateCommentDto } from "../Models/comment";
