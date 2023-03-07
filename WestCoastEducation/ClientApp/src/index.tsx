@@ -1,4 +1,5 @@
-import React, { StrictMode, useEffect } from "react";
+import { HubConnectionState } from "@microsoft/signalr";
+import React, { StrictMode, useEffect, useState } from "react";
 import ReactDOM, { createRoot } from "react-dom/client";
 import { SignalRApi } from "./Apis/signalr.service";
 import { App } from "./App";
@@ -8,10 +9,12 @@ const container = document.getElementById("root");
 const root = createRoot(container as HTMLElement);
 
 function AppRenderer() {
+
   useEffect(() => {
-    setTimeout(() => {
-      SignalRApi.startConnection();
-    }, 250);
+    async function establishConnection() {
+      await SignalRApi.startConnection();
+    }
+    establishConnection();
   }, []);
   return (
     <StrictMode>

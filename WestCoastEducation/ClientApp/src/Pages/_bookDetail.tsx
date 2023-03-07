@@ -19,14 +19,17 @@ import AuthContext from "../Providers/auth.provider";
 import { BookApi } from "../Apis/book.service";
 import { SignalRApi } from "../Apis/signalr.service";
 import { CommentDto, CreateCommentDto } from "../Models/comment";
+import SignalRContext from "../Providers/signalr.provider";
+import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 
 const PRIMARY_COL_HEIGHT = 300;
 
 export const bookDetail = (props: any) => {
+  const { isConnected } = useContext(SignalRContext);
   const [book, setbook] = useState<BookModel>();
   const [visible, setVisible] = useState(true);
   const { comments, loadingComment, addComment } = useSignalRConnection(
-    props.match.params.id
+    props.match.params.id, isConnected
   );
   const { user }: Partial<{ user: User }> = useContext(AuthContext);
   const theme = useMantineTheme();
@@ -125,9 +128,9 @@ export const bookDetail = (props: any) => {
   );
 };
 
-export const useSignalRConnection = (bookId: string) => {
+export const useSignalRConnection = (bookId: string, isConnected: any) => {
   const [comments, setComments] = useState<CommentDto[]>([]);
-  const [loadingComment, setLoadingComment] = useState(true);
+  const [loadingComment, setLoadingComment] = useState(false);
 
   const getInitialComments = async (bookId: string) => {
     try {
@@ -148,13 +151,15 @@ export const useSignalRConnection = (bookId: string) => {
   };
 
   useEffect(() => {
-    getInitialComments(bookId);
+    if(isConnected === HubConnectionState.Connected){
+      getInitialComments(bookId);
     SignalRApi.onCommentAdded(handleNewComment);
     SignalRApi.subscribeToComments(bookId);
     return () => {
       SignalRApi.unsubscribeFromComments(bookId);
     };
-  }, []);
+    }
+  }, [isConnected]);
 
   const addComment = async (comment: CreateCommentDto) => {
     try {

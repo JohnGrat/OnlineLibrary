@@ -24,15 +24,19 @@ class SignalRService {
   }
 
   public async startConnection(): Promise<void> {
-    try {
-      await this._hubConnection?.start();
-      console.assert(this.connectionState === HubConnectionState.Connected);
-    } catch (e) {
-      console.assert(this.connectionState === HubConnectionState.Disconnected);
-      console.error(e);
-      setTimeout(() => this.startConnection(), 5000);
-    }
+    await this._hubConnection?.start().then(() => {
+      if(this.connectionState !== HubConnectionState.Connected){
+        return new Promise<void>((resolve, reject) => {
+          // retry the connection after a short delay
+          setTimeout(() => {
+            this.startConnection().then(resolve).catch(reject);
+          }, 10000);
+        });
+      }
+    });
   }
+  
+  
 
   private createConnection(): void {
     this._hubConnection = new HubConnectionBuilder()

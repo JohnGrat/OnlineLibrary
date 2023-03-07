@@ -11,6 +11,7 @@ import { AuthProvider } from "./Providers/auth.provider";
 import config from "./config";
 import { RouterGuard } from "react-router-guard";
 import { SignalRApi } from "./Apis/signalr.service";
+import SignalRContext, { SignalRProvider } from "./Providers/signalr.provider";
 
 export const baseUrl = import.meta.env.DEV
   ? import.meta.env.VITE_BASE_URL
@@ -32,7 +33,9 @@ export const App: React.FC = () => {
         toggleColorScheme={toggleColorScheme}
       >
         <AuthProvider>
-          <RouterGuard config={config} />
+          <SignalRProvider>
+            <RouterGuard config={config} />
+          </SignalRProvider>
         </AuthProvider>
       </ColorSchemeProvider>
     </MantineProvider>
