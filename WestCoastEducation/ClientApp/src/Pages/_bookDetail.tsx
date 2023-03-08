@@ -85,7 +85,10 @@ export const bookDetail = (props: any) => {
       </Card.Section>
 
       <Card.Section p="xl">
-        <form onSubmit={form.onSubmit(addComment)}>
+        <form onSubmit={form.onSubmit((values) => {
+          addComment(values)
+          form.reset();
+        })}>
           <Textarea
             label="Your comment"
             placeholder={
@@ -151,7 +154,7 @@ export const useSignalRConnection = (bookId: string, isConnected: any) => {
   };
 
   useEffect(() => {
-    if(isConnected === HubConnectionState.Connected){
+    if(isConnected){
       getInitialComments(bookId);
     SignalRApi.onCommentAdded(handleNewComment);
     SignalRApi.subscribeToComments(bookId);
