@@ -10,3 +10,5 @@ The backend supports authentication for both frontend using cookies and direct A
 
 the frontend offers Google sign-in functionality and implements signalr
 It uses the Mantine component library, React-router-guards, and Axios.
+
+![Alt Text](https://i.imgur.com/cDbhevV.gif)
