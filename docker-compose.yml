@@ -1,0 +1,9 @@
+version: '3.4'
+
+services:
+  westcoasteducation:
+    image: ${DOCKER_REGISTRY-}westcoasteducation
+    build:
+      context: .
+      dockerfile: WestCoastEducation/Dockerfile
+      

@@ -1,0 +1,37 @@
+version: '3.4'
+
+networks:
+  dev:
+    driver: bridge
+
+services:
+  westcoasteducation:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    ports:
+      - 443
+    volumes:
+      - ~/.aspnet/https:/https:ro
+    networks:
+      - dev
+    depends_on:
+      - "app_db"
+
+  app_db:
+    image: thekingaakk/database:1.0
+    container_name: app_db
+    user: root
+    environment:
+      - SA_PASSWORD=ARandomPassword123!
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    restart: always
+    networks:
+      - dev
+
+volumes:
+  app_data:
