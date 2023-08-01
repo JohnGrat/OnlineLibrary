@@ -1,0 +1,42 @@
+name: Trigger auto deployment for westcoasteducation-app-202307311
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/westcoasteducation-app-202307311-AutoDeployTrigger-56eb57de-d0f7-489b-973e-b499cb0d1bc1.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.WESTCOASTEDUCATIONAPP202307311_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: westcoasteducation20230731170201.azurecr.io
+          registryUsername: ${{ secrets.WESTCOASTEDUCATIONAPP202307311_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.WESTCOASTEDUCATIONAPP202307311_REGISTRY_PASSWORD }}
+          containerAppName: westcoasteducation-app-202307311
+          resourceGroup: RG-LABB1-PUB-JG
+          imageToBuild: westcoasteducation20230731170201.azurecr.io/westcoasteducation-app-202307311:${{ github.sha }}
+          
+
+     
+
