@@ -12,4 +12,5 @@ the frontend offers Google sign-in functionality and implements signalr
 It uses the Mantine component library, React-router-guards, and Axios.
 
 ![Alt Text](https://i.imgur.com/cDbhevV.gif)
-![WestCoastEdu](https://github.com/JohnGrat/WestCoastEducation/assets/51702387/f1e60146-e590-4c81-a1ba-b4743611df99)
+
+![WestCoastEdu](https://github.com/JohnGrat/WestCoastEducation/assets/51702387/7f1b0535-670f-466d-94a6-6a94dc20de93)
