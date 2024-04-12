@@ -16,65 +16,66 @@ It uses the Mantine component library, React-router-guards, and Axios.
 
 # API Documentation
 
-AUTH
-/api/auth/register-admin:
-    Method: POST
-    Description: Register a new admin user.
-    Authorization: User must have Admin role.
-    Tags: Authentication
+## AUTH
 
-/api/auth/revoke-all:
-    Method: POST
-    Description: Revoke all tokens for all users.
-    Authorization: User must have Admin role.
-    Tags: Authentication
+### /api/auth/register-admin
+- **Method:** POST
+- **Description:** Register a new admin user.
+- **Authorization:** User must have Admin role.
+- **Tags:** Authentication
 
-/api/auth/revoke/{username}:
-    Method: POST
-    Description: Revoke all tokens for a specific user.
-    Parameters:
-        - username: The username of the user whose tokens are to be revoked.
-    Authorization: User must have Admin role.
-    Tags: Authentication
+### /api/auth/revoke-all
+- **Method:** POST
+- **Description:** Revoke all tokens for all users.
+- **Authorization:** User must have Admin role.
+- **Tags:** Authentication
 
-/api/auth/refresh-token:
-    Method: POST
-    Description: Refresh authentication token.
-    Tags: Authentication
+### /api/auth/revoke/{username}
+- **Method:** POST
+- **Description:** Revoke all tokens for a specific user.
+- **Parameters:**
+    - username: The username of the user whose tokens are to be revoked.
+- **Authorization:** User must have Admin role.
+- **Tags:** Authentication
 
-/api/auth/logout:
-    Method: GET
-    Description: Logout the current user.
-    Authorization: Required
-    Tags: Authentication
+### /api/auth/refresh-token
+- **Method:** POST
+- **Description:** Refresh authentication token.
+- **Tags:** Authentication
 
-/api/auth/googleexternallogin:
-    Method: GET
-    Description: Perform login via Google.
-    Tags: Authentication
+### /api/auth/logout
+- **Method:** GET
+- **Description:** Logout the current user.
+- **Authorization:** Required
+- **Tags:** Authentication
 
-/api/auth/login:
-    Method: GET
-    Description: Login to the system for using API User.
-    Tags: Authentication
+### /api/auth/googleexternallogin
+- **Method:** GET
+- **Description:** Perform login via Google.
+- **Tags:** Authentication
 
-/api/auth/me:
-    Method: GET
-    Description: Get current user details.
-    Authorization: Required
-    Tags: Authentication
+### /api/auth/login
+- **Method:** GET
+- **Description:** Login to the system for using API User.
+- **Tags:** Authentication
 
+### /api/auth/me
+- **Method:** GET
+- **Description:** Get current user details.
+- **Authorization:** Required
+- **Tags:** Authentication
 
+## BOOKS
 
-BOOKS
-/api/book:
-    Method: GET
-    Description: Get all books.
-    Tags: Books
+### /api/book:
+- **Method:** GET
+- **Description:** Get all books.
+- **Tags:** Books
 
-/api/book/{id}:
-    Method: GET
-    Description: Get a specific book by ID.
-    Parameters:
-        - id: The unique identifier of the book.
-    Tags: Books
+### /api/book/{id}:
+- **Method:** GET
+- **Description:** Get a specific book by ID.
+- **Parameters:**
+    - id: The unique identifier of the book.
+- **Tags:** Books
+
